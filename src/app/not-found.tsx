@@ -1,4 +1,4 @@
-import imageCakeNotFound from "@/assets/images/cake-not-found.jpg";
+import imageCakeNotFound from "@/assets/images/book-not-found.jpg";
 import { buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +8,7 @@ export default function NotFound() {
     <div className="container flex flex-col items-center justify-center h-full py-36">
       <Image
         src={imageCakeNotFound}
-        alt="Cake not found"
+        alt="Book not found"
         className="w-48 h-48 object-cover rounded mb-8"
         width={192}
         height={192}

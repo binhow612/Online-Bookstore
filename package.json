@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "migrate": "drizzle-kit push"
+    "migrate": "drizzle-kit push",
+    "chat:test": "tsx test-chat.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

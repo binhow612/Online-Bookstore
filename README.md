@@ -30,8 +30,7 @@
 <!-- end list -->
 
 ```bash
-git clone https://github.com/hoangvvo/ai-oven.git
-cd ai-oven
+git clone https://github.com/binhow612/Online-Bookstore/
 ```
 
 2.  Install dependencies:

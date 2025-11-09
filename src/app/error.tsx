@@ -1,6 +1,6 @@
 "use client";
 
-import imageOvenFire from "@/assets/images/oven-fire.jpg";
+import imageOvenFire from "@/assets/images/burning-book.jpg";
 import { buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,11 +29,11 @@ export default function Error({
       />
       <h1 className="text-4xl font-semibold mb-4">Uh-oh!</h1>
       <p className="text-gray-900 text-xl mb-8 text-center">
-        Our oven overheated, and things got a little crispy!
+        The book is gone, wait for me to call someone to help catch it!
       </p>
       <p className="text-lg text-gray-600 mb-8 max-w-xl text-center">
         It seems something went wrong, and we burned this page. But don’t worry,
-        our bakers are working to fix it. In the meantime, you can head back to
+        our employees are working to replace it. In the meantime, you can head back to
         our home page or try reloading.
       </p>
       <button

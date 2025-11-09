@@ -1,46 +1,50 @@
-# ai-oven
+# The Book Haven (OldBookSaigon)
 
-![AI Oven](https://raw.githubusercontent.com/hoangvvo/ai-oven/refs/heads/main/docs/image.webp)
+[cite\_start]The Book Haven (còn được biết đến với tên "OldBookSaigon" [cite: 452][cite\_start]) là một dự án cho môn học *Thương mại Điện tử (CO3027)* tại Trường Đại học Bách khoa, Đại học Quốc gia Thành phố Hồ Chí Minh[cite: 447, 449]. Mục tiêu của dự án là:
 
-AI Oven is a project for the course _Electronic Commerce (CO3027)_ at Ho Chi Minh City University of Technology, Vietnam National University, Ho Chi Minh City. It aims to:
-
-- Build an elegantly-designed e-commerce website for selling baking products.
-- Integrate with PayPal for payment.
-- Implement an AI feature that can recommend products to users through a chatbot.
-- Continously train the AI model with user-provided content (reviews, ratings, etc.) and product information.
+  - Xây dựng một trang web thương mại điện tử B2C chuyên biệt để bán **sách cũ**, tập trung vào thị trường TP. [cite\_start]Hồ Chí Minh[cite: 470, 476].
+  - [cite\_start]Tích hợp với các cổng thanh toán trực tuyến (như PayPal, MoMo, ZaloPay, VNPay)[cite: 856].
+  - [cite\_start]Triển khai một tính năng AI đổi mới là **Chatbot Mô hình Ngôn ngữ Lớn (LLM)** để cách mạng hóa trải nghiệm tìm kiếm của người dùng[cite: 480, 496].
+  - [cite\_start]Cho phép người dùng **"khám phá" sách** bằng các truy vấn ngôn ngữ tự nhiên (ví dụ: "tìm sách về lịch sử Sài Gòn" [cite: 481][cite\_start]), vượt xa các công cụ tìm kiếm từ khóa truyền thống[cite: 723].
 
 ## Technologies
 
-- [Node.js](https://nodejs.org/en/)
-- [Next.js](https://nextjs.org/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Milvus](https://milvus.io/)
-- [PayPal](https://developer.paypal.com/home/)
+  - [Node.js](https://nodejs.org/en/)
+  - [Next.js](https://nextjs.org/)
+  - [PostgreSQL](https://www.postgresql.org/)
+  - [Milvus](https://milvus.io/)
+  - [PayPal](https://developer.paypal.com/home/)
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js and npm](https://nodejs.org/en/) (Node.js version >= 20)
-- [Docker and Docker Compose](https://docs.docker.com/get-started/get-docker/)
-- [PayPal Developer Account](https://developer.paypal.com/home/)
+  - [Node.js and npm](https://nodejs.org/en/) (Node.js version \>= 20)
+  - [Docker and Docker Compose](https://docs.docker.com/get-started/get-docker/)
+  - [PayPal Developer Account](https://developer.paypal.com/home/)
 
 ### Installation
 
-1. Clone the repository:
+1.  Clone the repository:
+
+<!-- end list -->
 
 ```bash
 git clone https://github.com/hoangvvo/ai-oven.git
 cd ai-oven
 ```
 
-2. Install dependencies:
+2.  Install dependencies:
+
+<!-- end list -->
 
 ```bash
 npm install
 ```
 
-3. Create a `.env` file in the root directory and fill in the following environment variables:
+3.  Create a `.env` file in the root directory and fill in the following environment variables:
+
+<!-- end list -->
 
 ```bash
     DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
@@ -54,25 +58,31 @@ npm install
     APP_URL=http://localhost:3000
 ```
 
-4. Start the PostgreSQL and Milvus services:
+4.  Start the PostgreSQL and Milvus services:
+
+<!-- end list -->
 
 ```bash
 docker compose up -d
 ```
 
-5. Run the migrations:
+5.  Run the migrations:
+
+<!-- end list -->
 
 ```bash
 npm run migrate
 ```
 
-6. Start the server:
+6.  Start the server:
+
+<!-- end list -->
 
 ```bash
 npm run dev
 ```
 
-Optionally, you can seed the database with some initial data from the [data.sql](data.sql) file:
+Optionally, you can seed the database with some initial data from the [data.sql](https://www.google.com/search?q=data.sql) file:
 
 ```bash
 psql -U postgres -d postgres -a -f data.sql
@@ -97,4 +107,4 @@ docker compose up -d
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.

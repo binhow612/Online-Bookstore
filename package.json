@@ -69,12 +69,11 @@
     "typescript": "^5"
   },
   "author": {
-    "name": "Hoang Vo",
-    "url": "https://hoangvo.com"
+    "name": "Phan Binh Hao"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hoangvvo/ai-oven"
+    "url": "https://github.com/binhow612/Online-Bookstore"
   },
   "license": "AGPL-3.0-only"
 }

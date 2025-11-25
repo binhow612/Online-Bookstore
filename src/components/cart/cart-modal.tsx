@@ -20,18 +20,31 @@ import { useCart } from "./cart-context";
 
 function CartItemCard({ item }: { item: CartItem }) {
   const { dispatch } = useCart();
-
   const totalPrice = getCartItemCost(item);
 
-  const onChange = (e: React.FocusEvent<HTMLInputElement>) => {
+  const increaseQuantity = () => {
+    dispatch({
+      type: "update",
+      product: item.product,
+      quantity: item.quantity + 1,
+    });
+  };
+
+  const decreaseQuantity = () => {
+    const newQuantity = Math.max(1, item.quantity - 1);
+    dispatch({
+      type: "update",
+      product: item.product,
+      quantity: newQuantity,
+    });
+  };
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let quantity = e.currentTarget.valueAsNumber;
-
-    // if number is not valid, set it to 1
     if (!Number.isInteger(quantity) || quantity < 1) {
-      e.currentTarget.value = "1";
       quantity = 1;
+      e.currentTarget.value = "1";
     }
-
     dispatch({
       type: "update",
       product: item.product,
@@ -70,17 +83,30 @@ function CartItemCard({ item }: { item: CartItem }) {
           )}
         </p>
         <div className="flex items-center gap-4 justify-between">
-          <div className="flex items-center gap-4">
-            <span className="text-neutral-500">Quantity:</span>
+          {/* Quantity selector: - / input / + */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={decreaseQuantity}
+              className="w-8 h-8 flex items-center justify-center bg-neutral-200 rounded"
+            >
+              -
+            </button>
             <input
               type="number"
               className="w-12 h-8 text-lg rounded text-center bg-neutral-100"
-              defaultValue={item.quantity}
+              value={item.quantity}
               min={1}
               step={1}
-              onChange={onChange}
+              onChange={onInputChange}
             />
+            <button
+              onClick={increaseQuantity}
+              className="w-8 h-8 flex items-center justify-center bg-neutral-200 rounded"
+            >
+              +
+            </button>
           </div>
+
           <button
             className="text-md underline text-neutral-800"
             onClick={onRemove}

@@ -1,43 +1,52 @@
 "use client";
 
 import { Product } from "@/types";
-import { useRef } from "react";
 import { toast } from "sonner";
 import { useCart } from "./cart";
 import { Button } from "./ui/button";
 
-export function AddToCart({ product }: { product: Product }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
+export function AddToCart({
+  product,
+  quantity,
+  setQuantity, // nhận từ ProductPage để đồng bộ
+}: {
+  product: Product;
+  quantity: number;
+  setQuantity: (q: number) => void;
+}) {
   const { dispatch } = useCart();
 
   const addToCart = () => {
-    const quantity = inputRef.current?.valueAsNumber;
-    if (!quantity) {
-      toast.error("Please enter a quantity");
+    if (!quantity || quantity < 1) {
+      toast.error("Please enter a valid quantity (1 or more)");
+      setQuantity(1);
+      return;
     }
-    dispatch({ type: "add", product, quantity: quantity || 1 });
+
+    dispatch({
+      type: "add",
+      product,
+      quantity,
+    });
+
+    toast.success(`Added ${quantity} × ${product.name} to your cart!`);
   };
 
-  const onBlur = () => {
-    if (!inputRef.current) return;
-    // check if input is a valid round number or else set it to 1
-    const quantity = inputRef.current?.valueAsNumber;
-    if (!Number.isInteger(quantity)) {
-      inputRef.current.value = "1";
-    }
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.currentTarget.valueAsNumber;
+    if (!Number.isInteger(val) || val < 1) val = 1;
+    setQuantity(val);
   };
 
   return (
     <div className="flex items-center gap-2">
       <input
-        ref={inputRef}
         type="number"
         className="w-20 h-10 text-center border border-neutral-300 rounded"
-        defaultValue={1}
+        value={quantity}
         min={1}
         step={1}
-        onBlur={onBlur}
+        onChange={onInputChange}
         aria-label="Quantity"
       />
       <Button onClick={addToCart}>Add to Cart</Button>

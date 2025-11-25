@@ -41,10 +41,11 @@ const MessageMarkdown = ({ children }: { children: string }) => (
 );
 
 const defaultMessage = outdent`
-  Hello! I am the Chef of AI Oven, here to help you find the perfect treat for your taste buds.
+  Chào bạn! Tôi là trợ lý ảo của The Book Haven (OldBookSaigon).
 
-  You can start by letting me know what you're in the mood for today 🤔 or 
-  what occasion you're celebrating 🎉.
+  Tôi có thể giúp bạn tìm sách theo chủ đề, tác giả, hoặc trả lời các câu hỏi về dịch vụ của cửa hàng. 
+
+  Bạn cần tìm gì hôm nay? 📚
 `;
 
 function AssistantMessageBlock({

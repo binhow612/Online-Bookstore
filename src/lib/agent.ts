@@ -1,6 +1,7 @@
 import { db } from "@/db";
-import { productCollectionsTable, productsTable } from "@/db/schema";
-import { Message, User } from "@/types";
+// CẬP NHẬT IMPORT: Sử dụng đúng tên bảng trong schema mới
+import { bookCategoriesTable, booksTable, categoriesTable } from "@/db/schema";
+import { Message, FullAppSession } from "@/types";
 import { and, eq, gt, inArray, like, or, SQL } from "drizzle-orm";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
@@ -10,29 +11,34 @@ import { embedder } from "./embedder";
 import { vectorStore } from "./vector-store";
 
 const systemPrompt = outdent`
-  You are the Chef of AI Oven, a bakery e-commerce website. Your personality is friendly, cheerful, and helpful.
+  You are the knowledgeable assistant for 'The Book Haven' (OldBookSaigon), an online bookstore specializing in used books.
+  Your personality is friendly, enthusiastic, and well-read.
 
   Tasks:
-  1. Recommend the best products to customers based on their descriptions and preferences.
-  2. Provide detailed information about the products.
-  3. List all products available in the store.
-  4. List all product collections available in the store. (One product can belong to multiple collections)
+  1. Recommend books to customers based on descriptions, preferences, or natural language queries (e.g., "find me books about the history of Saigon").
+  2. Provide detailed information about books (description, author, price, etc.).
+  3. List available books or book categories from the store.
+  4. Answer frequently asked questions (FAQs) related to books, purchasing processes, shipping, or returns.
+  5. Provide personalized answers based on the user's information (if they are logged in), such as checking their shopping cart.
 
-  Product attributes include: name, description, ingredients, nutritional info, allergen info, serving suggestions, storage instructions, price (original before discount), and discount percent. Calculate and display discounted price if discount percent is greater than 0.
-  Only mention the name, price, and URL in the response by default unless the user asks for more details.
+  Product attributes include: title, author, description, price (original before discount), and discount percent.
+  Calculate and display the discounted price if a discount is available.
+  By default, only mention the book title, author, price, and URL, unless the user asks for more details.
   
-  The URL to the product is ${process.env["APP_URL"]}/products/{product_id}.
-  The URL to view a collection is ${process.env["APP_URL"]}/products?collection={collection_id}.
+  The URL to the product details page is: ${process.env["APP_URL"]}/products/{product_id}.
+  The URL to a category/collection is: ${process.env["APP_URL"]}/products?category={category_id}.
 
   Use the following tools:
-  - relevance_search to find the best products to recommend based on descriptive keywords. This will also return user reviews that may contain relevant information to help with the user query.
-  - list_products to list all products available in the store. list_products returns 10 products at a time so you can suggest the user to view the next page or view more details about a specific product.
+  - relevance_search: Use this to find the most relevant books based on descriptive keywords. This tool may also return user reviews relevant to the query.
+  - list_products: Use to list available books. (Returns 10 at a time, you can suggest the user view the next page).
+  - list_collections: Use to list available book categories.
+  - get_user_cart: Use to get information about the items currently in the user's shopping cart (only use when the user asks about their cart).
 
-  Upon receiving a query, try performing some searches first and DO NOT ask the user for more information unless necessary.
-  Explain concisely about the reasons for the recommendations, whether it's based on product attributes or user reviews.
+  When receiving a query, try searching first. DO NOT ask for more information unless absolutely necessary.
+  Briefly explain your recommendations.
 
-  Other services, such as making orders, should be directed to the website.
-  Do not respond if the request does not pertain to the tasks mentioned above.
+  For other services, like placing an order, direct the user to the website.
+  Do not respond if the request is unrelated to the tasks mentioned above.
 
   Respond in markdown format.
 `;
@@ -43,20 +49,21 @@ interface AgentTool extends OpenAI.FunctionDefinition {
 
 export class Agent {
   tools: AgentTool[];
+  private session: FullAppSession | null = null;
 
   constructor() {
     this.tools = [
       {
         name: "list_products",
         description:
-          "List products available in the store. Will return 10 products at a time. Use the offset parameter to paginate.",
+          "List books available in the store. Returns 10 at a time. Use the 'offset' parameter for pagination.",
         parameters: {
           type: "object",
           properties: {
             search: {
               type: ["string", "null"],
               description:
-                "Search query to filter products by name and description, if provided",
+                "Search query to filter books by title or description",
             },
             offset: {
               type: "integer",
@@ -64,16 +71,17 @@ export class Agent {
             },
             featured: {
               type: ["boolean", "null"],
-              description: "Filter by featured products",
+              description: "Filter by featured books",
             },
             discounted: {
               type: ["boolean", "null"],
-              description: "Filter by discounted products",
+              description: "Filter by discounted books",
             },
-            collection_id: {
-              type: ["string", "null"],
+            category_id: {
+              // SỬA LỖI: Schema định nghĩa ID là varchar, nên đổi sang string
+              type: ["string", "null"], 
               description:
-                "Filter by collection ID (This is the ID, not the name so you may need to fetch all collections first to match)",
+                "Filter by category ID (use list_collections to get IDs first)",
             },
           },
           required: [
@@ -81,58 +89,58 @@ export class Agent {
             "offset",
             "featured",
             "discounted",
-            "collection_id",
+            "category_id",
           ],
           additionalProperties: false,
         },
         strict: true,
-        execute({ search, offset, featured, discounted, collection_id }) {
+        execute: async ({ search, offset, featured, discounted, category_id }) => {
           const conds: SQL[] = [];
 
           if (search) {
             conds.push(
               or(
-                like(productsTable.name, `%${search}%`),
-                like(productsTable.description, `%${search}%`),
-              )!,
+                // CẬP NHẬT: Dùng cột của bảng booksTable
+                like(booksTable.title, `%${search}%`),
+                like(booksTable.description, `%${search}%`),
+                like(booksTable.author, `%${search}%`)
+              )!
             );
           }
 
           if (featured !== null) {
-            conds.push(eq(productsTable.featured, featured));
+            conds.push(eq(booksTable.featured, featured));
           }
 
           if (discounted !== null) {
-            conds.push(gt(productsTable.discount_percent, "0"));
+            conds.push(gt(booksTable.discount_percent, "0"));
           }
 
-          if (collection_id) {
-            conds.push(
-              eq(productCollectionsTable.collection_id, collection_id),
-            );
+          if (category_id) {
+            // CẬP NHẬT: Logic lọc theo category ID (sử dụng bảng nối bookCategoriesTable)
+            conds.push(eq(bookCategoriesTable.category_id, category_id));
           }
 
           const query = db
-            .selectDistinctOn([productsTable.id], {
-              id: productsTable.id,
-              name: productsTable.name,
-              description: productsTable.description,
-              price: productsTable.price,
-              discount_percent: productsTable.discount_percent,
-              featured: productsTable.featured,
-              ingredients: productsTable.ingredients,
-              nutritional_info: productsTable.nutritional_info,
-              allergen_info: productsTable.allergen_info,
-              serving_suggestions: productsTable.serving_suggestions,
-              storage_instructions: productsTable.storage_instructions,
+            .selectDistinctOn([booksTable.id], {
+              id: booksTable.id,
+              title: booksTable.title,
+              author: booksTable.author,
+              description: booksTable.description,
+              price: booksTable.price,
+              discount_percent: booksTable.discount_percent,
+              featured: booksTable.featured,
+              cover_url: booksTable.cover_url,
             })
-            .from(productsTable)
+            .from(booksTable)
+            // Join với bảng categories để lọc nếu cần
             .leftJoin(
-              productCollectionsTable,
-              eq(productsTable.id, productCollectionsTable.product_id),
+              bookCategoriesTable,
+              eq(booksTable.id, bookCategoriesTable.book_id)
             );
 
           if (conds.length) {
+             // Nếu có điều kiện lọc, áp dụng where
             return query
               .where(conds.length > 1 ? and(...conds) : conds[0])
               .offset(offset)
@@ -145,7 +153,7 @@ export class Agent {
       {
         name: "relevance_search",
         description:
-          "Search for products based on descriptive keywords and return product details and user reviews",
+          "Search for books based on descriptive keywords and return book details and user reviews.",
         parameters: {
           type: "object",
           properties: {
@@ -167,32 +175,32 @@ export class Agent {
             limit: 100,
           });
 
-          // get first 50 results
           const result = res.slice(0, 50);
-          const products = await db.query.productsTable.findMany({
-            where: inArray(
-              productsTable.id,
-              result.map((r) => r.product_id),
-            ),
+          const productIds = result.map((r) => r.product_id).filter(Boolean);
+
+          if (productIds.length === 0) {
+            return [];
+          }
+
+          // CẬP NHẬT: Query vào db.query.books
+          const products = await db.query.booksTable.findMany({
+            where: inArray(booksTable.id, productIds),
             columns: {
               id: true,
-              name: true,
+              title: true,
+              author: true,
               description: true,
-              ingredients: true,
-              nutritional_info: true,
-              allergen_info: true,
-              serving_suggestions: true,
-              storage_instructions: true,
               price: true,
+              cover_url: true,
             },
           });
 
           const productInfoCount = result.filter(
-            (r) => r.content_type === "product_info",
+            (r) => r.content_type === "product_info"
           ).length;
           const reviewCount = result.length - productInfoCount;
           console.log(
-            `Product info count: ${productInfoCount}, Review count: ${reviewCount}`,
+            `Product info count: ${productInfoCount}, Review count: ${reviewCount}`
           );
 
           return result.map((r) => {
@@ -206,7 +214,7 @@ export class Agent {
       },
       {
         name: "get_product",
-        description: "Get detailed information about a product using its ID",
+        description: "Get detailed information about a book using its ID",
         parameters: {
           type: "object",
           properties: {
@@ -219,21 +227,24 @@ export class Agent {
         },
         strict: true,
         async execute({ product_id }) {
-          const product = await db.query.productsTable.findFirst({
-            where: eq(productsTable.id, product_id),
+          // CẬP NHẬT: Query bảng books
+          const product = await db.query.booksTable.findFirst({
+            where: eq(booksTable.id, product_id),
             columns: {
               id: true,
-              name: true,
+              title: true,
+              author: true,
+              isbn: true,
               description: true,
-              ingredients: true,
-              nutritional_info: true,
-              allergen_info: true,
-              serving_suggestions: true,
-              storage_instructions: true,
               price: true,
               discount_percent: true,
               featured: true,
+              cover_url: true,
+              publisher: true,
+              publication_year: true,
+              page_count: true,
             },
+             // Có thể include reviews nếu cần: with: { bookReviews: true }
           });
 
           if (!product) {
@@ -244,29 +255,62 @@ export class Agent {
         },
       },
       {
-        name: "list_collections",
-        description: "List all product collections",
-        execute() {
-          return db.query.collectionsTable.findMany({
-            columns: {
-              id: true,
-              name: true,
-              description: true,
-            },
-          });
+        name: "list_collections", // Giữ tên tool cũ để đỡ sửa system prompt, nhưng logic là Categories
+        description: "List all book categories",
+        parameters: {
+          type: "object",
+          properties: {},
+        },
+        execute: () => {
+          // CẬP NHẬT: Query bảng categories
+          return db
+            .select({
+              id: categoriesTable.id,
+              name: categoriesTable.name,
+              description: categoriesTable.description,
+            })
+            .from(categoriesTable);
+        },
+      },
+      {
+        name: "get_user_cart",
+        description:
+          "Gets the items currently in the user's shopping cart. Only use this when the user asks about their cart.",
+        parameters: {
+          type: "object",
+          properties: {},
+        },
+        execute: () => {
+          if (!this.session || !this.session.user) {
+            return {
+              error:
+                "The user is not logged in. Please ask them to log in to see their cart.",
+            };
+          }
+          if (!this.session.cart || this.session.cart.items.length === 0) {
+            return {
+              message: "Your cart is currently empty.",
+              items: [],
+            };
+          }
+          return this.session.cart;
         },
       },
     ];
   }
 
-  async ask(inputMessages: Message[], user: User | null) {
+  async ask(inputMessages: Message[], session: FullAppSession | null) {
+    this.session = session;
+
     const messages: ChatCompletionMessageParam[] = [
       {
         role: "system",
         content: [
           systemPrompt,
-          !!user &&
-            `The user name is ${user.first_name} ${user.last_name}, and it is currently ${new Date().toJSON()}`,
+          !!session?.user &&
+            `The current user's name is ${session.user.first_name} ${session.user.last_name}.`,
+          !!session?.cart?.items?.length &&
+            `The user currently has ${session.cart.items.length} item(s) in their cart. Use get_user_cart() to see details if they ask.`,
         ]
           .filter(Boolean)
           .join("\n\n"),
@@ -302,7 +346,7 @@ export class Agent {
 
         for (const toolCall of choice.message.tool_calls) {
           const tool = this.tools.find(
-            (t) => t.name === toolCall.function.name,
+            (t) => t.name === toolCall.function.name
           );
           if (!tool) {
             throw new Error(`Tool not found: ${toolCall.function.name}`);

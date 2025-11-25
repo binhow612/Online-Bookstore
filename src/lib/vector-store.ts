@@ -15,7 +15,7 @@ class Milvus {
     this.client = new MilvusClient({
       address: process.env.MILVUS_HOST || "milvus-host",
       token: process.env.MILVUS_TOKEN as string,
-      database: "aioven",
+      database: "the_book_haven",
     });
   }
 

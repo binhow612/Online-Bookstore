@@ -1,4 +1,4 @@
-import { getBookCost } from "@/lib/utils";
+import { formatPrice, getBookCost } from "@/lib/utils";
 import { Book } from "@/types";
 import Image from "next/image";
 
@@ -44,11 +44,11 @@ export function BookCard({
       </p>
       <p className="text-sm text-neutral-600 w-full text-left">
         {bookCost.price === bookCost.originalPrice ? (
-          <>${bookCost.price}</>
+          <>${formatPrice(bookCost.price)}</>
         ) : (
           <>
-            <span className="line-through">${bookCost.originalPrice}</span> $
-            {bookCost.price}
+            <span className="line-through">${formatPrice(bookCost.originalPrice)}</span> $
+            {formatPrice(bookCost.price)}
           </>
         )}
       </p>

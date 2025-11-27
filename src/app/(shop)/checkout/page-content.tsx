@@ -5,7 +5,7 @@ import { CountrySelect } from "@/components/country-select";
 import { useSession } from "@/components/session";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn, getCartItemCost, getCartTotalCost } from "@/lib/utils";
+import { cn, formatPrice, getCartItemCost, getCartTotalCost } from "@/lib/utils";
 import { CartItem, Order } from "@/types";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import {
@@ -42,13 +42,13 @@ function CartItemCard({ item }: { item: CartItem }) {
       <div className="flex flex-col items-end">
         <p className="text-lg text-neutral-800">
           {itemPrice.cost === itemPrice.originalCost ? (
-            <>${itemPrice.cost}</>
+            <>${formatPrice(itemPrice.cost)}</>
           ) : (
             <>
               <span className="line-through text-neutral-500">
-                ${itemPrice.originalCost}
+                ${formatPrice(itemPrice.originalCost)}
               </span>{" "}
-              ${itemPrice.cost}
+              ${formatPrice(itemPrice.cost)}
             </>
           )}
         </p>
@@ -288,11 +288,11 @@ export function CheckoutPageContent({
           <div className="flex justify-between items-center border-t border-neutral-200 py-4">
             <p className="text-xl font-semibold">Total</p>
             <p className="text-xl font-semibold">
-              ${totalCost.totalCost}
+              ${formatPrice(totalCost.totalCost)}
               {Number(totalCost.saving) > 0 && (
                 <span className="text-neutral-500">
                   {" "}
-                  (Saved ${totalCost.saving})
+                  (Saved ${formatPrice(totalCost.saving)})
                 </span>
               )}
             </p>

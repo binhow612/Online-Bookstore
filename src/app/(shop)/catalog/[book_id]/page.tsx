@@ -1,6 +1,6 @@
 import { AddToCartBook } from "@/components/add-to-cart-book";
 import { getBook } from "@/lib/data";
-import { getBookCost } from "@/lib/utils";
+import { formatPrice, getBookCost } from "@/lib/utils";
 import { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -67,13 +67,13 @@ export default async function BookPage(props: Props) {
           <p className="text-base md:text-lg mb-4">{book.description}</p>
           <p className="text-xl md:text-2xl mb-6 text-gray-700">
             {bookCost.price === bookCost.originalPrice ? (
-              <>${bookCost.price}</>
+              <>${formatPrice(bookCost.price)}</>
             ) : (
               <>
                 <span className="line-through text-neutral-500">
-                  ${bookCost.originalPrice}
+                  ${formatPrice(bookCost.originalPrice)}
                 </span>{" "}
-                ${bookCost.price}{" "}
+                ${formatPrice(bookCost.price)}{" "}
                 <span className="bg-rose-600 text-white font-semibold py-1 px-2 rounded text-sm">
                   ({parseInt(book.discount_percent)}% off)
                 </span>

@@ -90,6 +90,6 @@ export default async function CatalogPage({
 }
 
 export const metadata: Metadata = {
-  title: "Catalog - AI Oven",
+  title: "Catalog - The Book Haven",
   description: "Browse our collection of books by category.",
 };

@@ -74,6 +74,6 @@ export default async function AccountPage() {
 }
 
 export const metadata: Metadata = {
-  title: "My Account - AI Oven",
+  title: "My Account - The Book Haven",
   description: "View your account information and order history.",
 };

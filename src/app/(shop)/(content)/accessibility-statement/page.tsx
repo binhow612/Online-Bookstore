@@ -6,5 +6,5 @@ export default function AccessibilityStatementPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Accessibility Statement - AI Oven",
+  title: "Accessibility Statement - The Book Haven",
 };

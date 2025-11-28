@@ -6,5 +6,5 @@ export default function PromotionsTermPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Promotions Terms - AI Oven",
+  title: "Promotions Terms - The Book Haven",
 };

@@ -6,5 +6,5 @@ export default function PrivacyPolicyPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - AI Oven",
+  title: "Privacy Policy - The Book Haven",
 };

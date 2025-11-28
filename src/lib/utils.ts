@@ -23,11 +23,15 @@ export function debounce<T extends () => unknown>(fn: T, delay: number) {
 // ======================
 
 export function formatPrice(amount: number | string) {
-  return Number(amount).toLocaleString("en-US");
+  const num = Number(amount);
+  return num.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 }
 
 export function formatPriceUSD(amount: number | string) {
-  return "$" + Number(amount).toLocaleString("en-US");
+  return "$" + formatPrice(amount);
 }
 
 // ======================
@@ -37,33 +41,36 @@ export function formatPriceUSD(amount: number | string) {
 export function getProductCost(product: Product) {
   const price = Number(product.price) * (100 - Number(product.discount_percent)) * 0.01;
   const originalPrice = Number(product.price);
-  return { price: formatPrice(price), originalPrice: formatPrice(originalPrice) };
+  return { 
+    price: price, // Return raw number for calculations
+    originalPrice: originalPrice // Return raw number for calculations
+  };
 }
 
 export function getCartItemCost(item: CartItem) {
   const productCost = getProductCost(item.product);
   return {
-    cost: formatPrice(Number(productCost.price) * item.quantity),
-    originalCost: formatPrice(Number(productCost.originalPrice) * item.quantity),
+    cost: productCost.price * item.quantity,
+    originalCost: productCost.originalPrice * item.quantity,
   };
 }
 
 export function getCartTotalCost(cart: Cart) {
   const totalCostNumber = cart.items.reduce(
-    (total, item) => total + Number(getCartItemCost(item).cost.replace(/,/g, "")),
+    (total, item) => total + getCartItemCost(item).cost,
     0
   );
   const originalTotalCostNumber = cart.items.reduce(
-    (total, item) => total + Number(getCartItemCost(item).originalCost.replace(/,/g, "")),
+    (total, item) => total + getCartItemCost(item).originalCost,
     0
   );
 
   const savingNumber = originalTotalCostNumber - totalCostNumber;
 
   return {
-    totalCost: formatPrice(totalCostNumber),
-    originalTotalCost: formatPrice(originalTotalCostNumber),
-    saving: formatPrice(savingNumber),
+    totalCost: totalCostNumber,
+    originalTotalCost: originalTotalCostNumber,
+    saving: savingNumber,
   };
 }
 
@@ -74,7 +81,10 @@ export function getCartTotalCost(cart: Cart) {
 export function getBookCost(book: Book) {
   const price = Number(book.price) * (100 - Number(book.discount_percent)) * 0.01;
   const originalPrice = Number(book.price);
-  return { price: formatPrice(price), originalPrice: formatPrice(originalPrice) };
+  return { 
+    price: price, // Return raw number for calculations
+    originalPrice: originalPrice // Return raw number for calculations
+  };
 }
 
 // Optional: If you want cart functionality for books
@@ -91,25 +101,25 @@ export type BookCart = {
 export function getBookCartItemCost(item: BookCartItem) {
   const bookCost = getBookCost(item.book);
   return {
-    cost: formatPrice(Number(bookCost.price) * item.quantity),
-    originalCost: formatPrice(Number(bookCost.originalPrice) * item.quantity),
+    cost: bookCost.price * item.quantity,
+    originalCost: bookCost.originalPrice * item.quantity,
   };
 }
 
 export function getBookCartTotalCost(cart: BookCart) {
   const totalCostNumber = cart.items.reduce(
-    (total, item) => total + Number(getBookCartItemCost(item).cost.replace(/,/g, "")),
+    (total, item) => total + getBookCartItemCost(item).cost,
     0
   );
   const originalTotalCostNumber = cart.items.reduce(
-    (total, item) => total + Number(getBookCartItemCost(item).originalCost.replace(/,/g, "")),
+    (total, item) => total + getBookCartItemCost(item).originalCost,
     0
   );
   const savingNumber = originalTotalCostNumber - totalCostNumber;
 
   return {
-    totalCost: formatPrice(totalCostNumber),
-    originalTotalCost: formatPrice(originalTotalCostNumber),
-    saving: formatPrice(savingNumber),
+    totalCost: totalCostNumber,
+    originalTotalCost: originalTotalCostNumber,
+    saving: savingNumber,
   };
 }

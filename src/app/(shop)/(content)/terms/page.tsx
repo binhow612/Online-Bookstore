@@ -6,5 +6,5 @@ export default function TermsAndConditionsPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions - AI Oven",
+  title: "Terms & Conditions - The Book Haven",
 };

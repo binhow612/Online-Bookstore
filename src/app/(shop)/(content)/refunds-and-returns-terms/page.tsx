@@ -6,5 +6,5 @@ export default function RefundsPolicyPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Refunds & Returns Policy - AI Oven",
+  title: "Refunds & Returns Policy - The Book Haven",
 };

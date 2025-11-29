@@ -1,21 +1,13 @@
-"use client";
-
 import { BookCard } from "@/components/book-card";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { SimpleSearchForm } from "@/components/search-bar";
+import { getBooks, getCategories } from "@/lib/data";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
-export default function LandingPage({ featuredBooks }: { featuredBooks: any[] }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/catalog?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
+export default async function LandingPage() {
+  // Fetch real data from database
+  const allBooks = await getBooks();
+  const allCategories = await getCategories();
+  const featuredBooks = allBooks.filter(book => book.featured).slice(0, 8);
 
   return (
     <div className="min-h-screen bg-[#f7f2e8] flex flex-col items-center py-12 px-6">
@@ -44,32 +36,20 @@ export default function LandingPage({ featuredBooks }: { featuredBooks: any[] })
 
         {/* Search Bar */}
         <div className="mt-10">
-          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for books, authors, or genres..."
-              className="w-full px-5 py-4 pl-14 text-base md:text-lg font-serif rounded-lg border-2 border-[#c9b49a] focus:border-[#8b6b3f] focus:outline-none bg-white shadow-sm"
-            />
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[#8b6b3f]" />
-            <button
-              type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-[#8b6b3f] hover:bg-[#6b4e2e] transition text-white text-sm font-semibold rounded-md"
-            >
-              Search
-            </button>
-          </form>
+          <SimpleSearchForm 
+            placeholder="Search for books, authors, categories..."
+            className="max-w-2xl mx-auto"
+          />
         </div>
 
         {/* Quick Stats */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-4 bg-[#f7f2e8] rounded-lg border border-[#c9b49a]">
-            <div className="text-3xl font-bold text-[#8b6b3f]">1000+</div>
+            <div className="text-3xl font-bold text-[#8b6b3f]">{allBooks.length}+</div>
             <div className="text-sm text-[#6a563d] mt-1 font-serif">Books Available</div>
           </div>
           <div className="text-center p-4 bg-[#f7f2e8] rounded-lg border border-[#c9b49a]">
-            <div className="text-3xl font-bold text-[#8b6b3f]">8</div>
+            <div className="text-3xl font-bold text-[#8b6b3f]">{allCategories.length}</div>
             <div className="text-sm text-[#6a563d] mt-1 font-serif">Categories</div>
           </div>
           <div className="text-center p-4 bg-[#f7f2e8] rounded-lg border border-[#c9b49a]">
@@ -121,23 +101,15 @@ export default function LandingPage({ featuredBooks }: { featuredBooks: any[] })
             Browse by Category
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { name: "Vietnamese Lit.", id: "van-hoc-viet-nam" },
-              { name: "Fiction", id: "tieu-thuyet" },
-              { name: "Business", id: "kinh-te-ky-nang" },
-              { name: "Science", id: "khoa-hoc" },
-              { name: "History", id: "lich-su" },
-              { name: "Comics", id: "truyen-tranh" },
-              { name: "Children", id: "thieu-nhi" },
-              { name: "Psychology", id: "tam-ly-hoc" },
-            ].map((cat) => (
-              <a
-                key={cat.id}
-                href={`/catalog?category=${cat.id}`}
+            {allCategories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/catalog?category=${category.id}`}
                 className="p-3 text-center bg-[#f7f2e8] hover:bg-[#ede4d3] border border-[#c9b49a] rounded-lg transition font-serif text-sm text-[#6b4e2e] font-semibold"
+                title={category.description || undefined}
               >
-                {cat.name}
-              </a>
+                {category.name}
+              </Link>
             ))}
           </div>
         </div>
@@ -160,7 +132,7 @@ export default function LandingPage({ featuredBooks }: { featuredBooks: any[] })
       </div>
 
       {/* Featured Books Section */}
-      {featuredBooks && featuredBooks.length > 0 && (
+      {featuredBooks.length > 0 && (
         <div className="w-full max-w-7xl px-4">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#6b4e2e] mb-2">
@@ -172,7 +144,7 @@ export default function LandingPage({ featuredBooks }: { featuredBooks: any[] })
           </div>
           
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-            {featuredBooks.slice(0, 8).map((book: any, index: number) => (
+            {featuredBooks.map((book, index) => (
               <Link key={book.id} href={`/catalog/${book.id}`}>
                 <BookCard
                   book={book}

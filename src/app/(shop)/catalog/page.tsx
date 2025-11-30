@@ -1,51 +1,33 @@
 import { BookCard } from "@/components/book-card";
-import {
-  getCategories,
-  getBooks,
-  getBooksByCategoryId,
-} from "@/lib/data";
+import { getCategories } from "@/lib/data";
 import { Metadata } from "next";
 import Link from "next/link";
 import { CategoryList } from "./category-list";
 
 async function BookList({
+  page,
   categoryId,
   searchQuery,
 }: {
+  page: number;
   categoryId?: string;
   searchQuery?: string;
 }) {
-  let books = categoryId
-    ? await getBooksByCategoryId(categoryId)
-    : await getBooks();
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", "10");
 
-  if (searchQuery) {
-    books = books.filter(
-      (book) =>
-        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }
+  if (categoryId) params.set("category", categoryId);
+  if (searchQuery) params.set("q", searchQuery);
+
+  const res = await fetch(`http://localhost:3000/api/books?${params}`, {
+    cache: "no-store",
+  });
+  const json = await res.json();
+  const books = json.data;
 
   return (
     <div>
-      {searchQuery && (
-        <div className="text-neutral-500 text-sm">
-          Showing results for &ldquo;{searchQuery}&rdquo;.{" "}
-          <Link
-            href={"/catalog" + (categoryId ? `?category=${categoryId}` : "")}
-            className="underline"
-          >
-            Clear
-          </Link>
-        </div>
-      )}
-      {!books.length && (
-        <div className="text-center text-lg text-neutral-700 p-24">
-          No books found
-        </div>
-      )}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {books.map((book, index) => (
           <Link key={book.id} href={`/catalog/${book.id}`}>
@@ -56,33 +38,56 @@ async function BookList({
           </Link>
         ))}
       </div>
+
+      {/* PAGINATION */}
+      <div className="flex justify-center mt-8 gap-4">
+        {page > 1 && (
+          <Link
+            href={`/catalog?page=${page - 1}${
+              categoryId ? `&category=${categoryId}` : ""
+            }${searchQuery ? `&q=${searchQuery}` : ""}`}
+            className="px-4 py-2 border rounded"
+          >
+            ← Previous
+          </Link>
+        )}
+
+        {books.length === 10 && (
+          <Link
+            href={`/catalog?page=${page + 1}${
+              categoryId ? `&category=${categoryId}` : ""
+            }${searchQuery ? `&q=${searchQuery}` : ""}`}
+            className="px-4 py-2 border rounded"
+          >
+            Next →
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
 
-type SearchParams = { category?: string; q?: string };
+export default async function CatalogPage({ searchParams }) {
+  const params = await searchParams;
 
-export default async function CatalogPage({
-  searchParams: searchParamsPromise,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const searchParams = await searchParamsPromise;
+  const page = Number(params.page || 1);
   const categories = await getCategories();
 
   return (
     <div className="container flex flex-col md:flex-row py-12">
       <div className="md:w-[200px]">
         <CategoryList
-          categoryId={searchParams.category}
+          categoryId={params.category}
           categories={categories}
-          searchQuery={searchParams.q}
+          searchQuery={params.q}
         />
       </div>
+
       <div className="md:flex-1">
         <BookList
-          categoryId={searchParams.category}
-          searchQuery={searchParams.q}
+          page={page}
+          categoryId={params.category}
+          searchQuery={params.q}
         />
       </div>
     </div>

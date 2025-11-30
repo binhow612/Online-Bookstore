@@ -21,30 +21,13 @@ const getBookFromProps = async (props: Props) => {
   return book;
 };
 
-function BookDetailSection({
-  title,
-  content,
-}: {
-  title: string;
-  content: string | number | null | undefined;
-}) {
-  if (!content) {
-    return null;
-  }
-  return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-xl md:text-2xl font-medium">{title}</h2>
-      <p className="text-base md:text-lg text-neutral-700">{content}</p>
-    </div>
-  );
-}
-
 export default async function BookPage(props: Props) {
   const book = await getBookFromProps(props);
   const bookCost = getBookCost(book);
 
   return (
     <div className="container py-12 flex flex-col gap-8">
+      {/* Phần hình ảnh và thông tin chính */}
       <div className="flex flex-col md:flex-row gap-8">
         <div className="w-full md:w-72">
           <Image
@@ -84,13 +67,32 @@ export default async function BookPage(props: Props) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-8">
-        <BookDetailSection title="Publisher" content={book.publisher} />
-        <BookDetailSection title="Publication Year" content={book.publication_year} />
-        <BookDetailSection title="Pages" content={book.page_count} />
-        <BookDetailSection title="ISBN" content={book.isbn} />
-        <BookReviewSection book={book} />
+      {/* Bảng thông tin chi tiết sách */}
+      <div className="border rounded-lg overflow-hidden shadow-sm w-full md:w-2/3">
+        <table className="min-w-full divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-200">
+            <tr className="hover:bg-gray-50">
+              <td className="px-4 py-2 font-medium text-gray-700">Publisher</td>
+              <td className="px-4 py-2 text-gray-900">{book.publisher}</td>
+            </tr>
+            <tr className="hover:bg-gray-50">
+              <td className="px-4 py-2 font-medium text-gray-700">Publication Year</td>
+              <td className="px-4 py-2 text-gray-900">{book.publication_year}</td>
+            </tr>
+            <tr className="hover:bg-gray-50">
+              <td className="px-4 py-2 font-medium text-gray-700">Pages</td>
+              <td className="px-4 py-2 text-gray-900">{book.page_count}</td>
+            </tr>
+            <tr className="hover:bg-gray-50">
+              <td className="px-4 py-2 font-medium text-gray-700">ISBN</td>
+              <td className="px-4 py-2 text-gray-900">{book.isbn}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
+      {/* Phần đánh giá sách */}
+      <BookReviewSection book={book} />
     </div>
   );
 }

@@ -105,7 +105,8 @@ export default async function LandingPage() {
               <Link
                 key={category.id}
                 href={`/catalog?category=${category.id}`}
-                className="p-3 text-center bg-[#f7f2e8] hover:bg-[#ede4d3] border border-[#c9b49a] rounded-lg transition font-serif text-sm text-[#6b4e2e] font-semibold"
+                className="p-4 text-center bg-[#f7f2e8] hover:bg-[#ede4d3] border border-[#c9b49a] rounded-lg transition text-base text-[#6b4e2e] font-semibold"
+                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                 title={category.description || undefined}
               >
                 {category.name}

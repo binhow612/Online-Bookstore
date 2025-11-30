@@ -1,5 +1,6 @@
-import { getOrderByIdAndUserId } from "@/lib/data";
+import { getOrderByIdAndUserId, getOrdersByUserId } from "@/lib/data";
 import { getSession } from "@/lib/session";
+import { formatPrice } from "@/lib/utils";
 import { BookOrderItemEntity } from "@/db/schema";
 import { Metadata } from "next";
 import Image from "next/image";
@@ -33,7 +34,7 @@ function BookOrderItemCard({ orderItem }: { orderItem: BookOrderItemEntity }) {
         </div>
       </div>
       <div className="flex flex-col items-end">
-        <p className="text-lg text-neutral-800">${orderItem.subtotal}</p>
+        <p className="text-lg text-neutral-800">${formatPrice(orderItem.subtotal)}</p>
       </div>
     </div>
   );
@@ -58,8 +59,16 @@ const getOrderFromProps = async (props: Props) => {
   return order;
 };
 
+const getOrderNumber = async (orderId: number, userId: number) => {
+  const allOrders = await getOrdersByUserId(userId);
+  const orderIndex = allOrders.findIndex(order => order.id === orderId);
+  return orderIndex !== -1 ? allOrders.length - orderIndex : orderId;
+};
+
 export default async function OrderPage(props: Props) {
   const order = await getOrderFromProps(props);
+  const session = await getSession();
+  const orderNumber = session.user ? await getOrderNumber(order.id, session.user.id) : order.id;
   const itemCount = order.bookOrderItems?.length ?? 0;
 
   return (
@@ -67,7 +76,7 @@ export default async function OrderPage(props: Props) {
       <Link href="/orders" className="text-sm text-gray-700 hover:underline">
         ← Back to Orders
       </Link>
-      <h1 className="text-3xl font-medium mb-4 mt-2">Order #{order.id}</h1>
+      <h1 className="text-3xl font-medium mb-4 mt-2">Order #{orderNumber}</h1>
       <div className="flex flex-col gap-1 mb-6">
         <div className="flex items-center gap-4 p-2 bg-gray-50 rounded">
           <div className="bg-teal-700 text-teal-50 px-2 py-0.5 rounded text-sm">
@@ -88,7 +97,7 @@ export default async function OrderPage(props: Props) {
         <div className="text-gray-900 text-xl">
           {itemCount} item{itemCount !== 1 && "s"}
         </div>
-        <div className="text-gray-700 text-2xl">${order.total_price}</div>
+        <div className="text-gray-700 text-2xl">${formatPrice(order.total_price)}</div>
       </div>
     </div>
   );
@@ -96,8 +105,11 @@ export default async function OrderPage(props: Props) {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const order = await getOrderFromProps(props);
+  const session = await getSession();
+  const orderNumber = session.user ? await getOrderNumber(order.id, session.user.id) : order.id;
+  
   return {
-    title: `Order #${order.id} - The Book Haven`,
+    title: `Order #${orderNumber} - The Book Haven`,
     robots: "noindex",
   };
 }

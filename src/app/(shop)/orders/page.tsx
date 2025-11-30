@@ -1,5 +1,6 @@
 import { getOrdersByUserId } from "@/lib/data";
 import { getSession } from "@/lib/session";
+import { formatPrice } from "@/lib/utils";
 import { Order } from "@/types";
 import { format } from "date-fns";
 import { Metadata } from "next";
@@ -17,7 +18,7 @@ const getDescription = (order: Order) => {
   return `${itemNames}${remainingText}`;
 };
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ order, orderNumber }: { order: Order; orderNumber: number }) {
   const firstBookItem = order.bookOrderItems?.[0];
 
   return (
@@ -32,13 +33,13 @@ function OrderCard({ order }: { order: Order }) {
         />
       )}
       <div className="flex-1 flex flex-col ml-4">
-        <h2 className="text-lg font-medium">Order #{order.id}</h2>
+        <h2 className="text-lg font-medium">Order #{orderNumber}</h2>
         <p className="text-gray-700 text-sm mb-2">
           {format(new Date(order.created_at), "MMMM d, yyyy h:mm a")}
         </p>
         <p className="text-gray-700 text-sm mb-2">{getDescription(order)}</p>
         <p className="text-gray-600 text-sm">
-          {order.bookOrderItems?.length ?? 0} item{(order.bookOrderItems?.length ?? 0) !== 1 && "s"} · ${order.total_price}
+          {order.bookOrderItems?.length ?? 0} item{(order.bookOrderItems?.length ?? 0) !== 1 && "s"} · ${formatPrice(order.total_price)}
         </p>
       </div>
     </div>
@@ -62,9 +63,9 @@ export default async function OrdersPage() {
         </p>
       )}
       <div className="flex flex-col gap-4">
-        {orders.map((order) => (
+        {orders.map((order, index) => (
           <Link key={order.id} href={`/orders/${order.id}`}>
-            <OrderCard order={order} />
+            <OrderCard order={order} orderNumber={orders.length - index} />
           </Link>
         ))}
       </div>

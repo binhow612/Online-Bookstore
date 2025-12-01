@@ -1,5 +1,4 @@
 import { db } from "@/db";
-// CẬP NHẬT IMPORT: Sử dụng đúng tên bảng trong schema mới
 import { bookCategoriesTable, booksTable, categoriesTable } from "@/db/schema";
 import { Message, FullAppSession } from "@/types";
 import { and, eq, gt, inArray, like, or, SQL } from "drizzle-orm";
@@ -10,36 +9,44 @@ import { openai } from "./ai";
 import { embedder } from "./embedder";
 import { vectorStore } from "./vector-store";
 
+// [!code change] Cập nhật Prompt để định dạng list rõ ràng và bắt buộc có ảnh
 const systemPrompt = outdent`
   You are the knowledgeable assistant for 'The Book Haven' (OldBookSaigon), an online bookstore specializing in used books.
   Your personality is friendly, enthusiastic, and well-read.
 
   Tasks:
-  1. Recommend books to customers based on descriptions, preferences, or natural language queries (e.g., "find me books about the history of Saigon").
-  2. Provide detailed information about books (description, author, price, etc.).
-  3. List available books or book categories from the store.
-  4. Answer frequently asked questions (FAQs) related to books, purchasing processes, shipping, or returns.
-  5. Provide personalized answers based on the user's information (if they are logged in), such as checking their shopping cart.
+  1. Recommend books to customers based on descriptions, preferences, or natural language queries.
+  2. Provide detailed information about books.
+  3. List available books or book categories.
+  4. Answer FAQs related to books, purchasing, shipping, or returns.
+  5. Provide personalized answers based on user info (e.g., cart status).
 
-  Product attributes include: title, author, description, price (original before discount), and discount percent.
-  Calculate and display the discounted price if a discount is available.
-  By default, only mention the book title, author, price, and URL, unless the user asks for more details.
+  Product attributes include: title, author, description, price, discount percent, and cover_url.
+  Calculate the discounted price if applicable.
   
-  The URL to the product details page is: ${process.env["APP_URL"]}/products/{product_id}.
-  The URL to a category/collection is: ${process.env["APP_URL"]}/products?category={category_id}.
+  **IMPORTANT DISPLAY RULES:**
+  - When listing or recommending a book, **ALWAYS** display its cover image first using Markdown syntax: ![Book Title](cover_url).
+  - Then, display the book details using a **bulleted list** format exactly like this:
+    - ""**Title:** [Book Title]
+    - **Tác giả:** [Author Name]
+    - **Giá:** [Price]
+    - **Nội dung:** [Short Description]
+    - **Giảm giá:** [Discount Percent]% (if applicable)
+    - **Giá sau giảm:** [Final Price] (if applicable)
+    - [Chi tiết và mua hàng](${process.env["APP_URL"]}/catalog/{product_id})
+  
+  - Ensure the "Chi tiết và mua hàng" link is always on its own separate bullet line at the end of the list.
+  
+  The URL to a category/collection is: ${process.env["APP_URL"]}/catalog?category={category_id}.
 
   Use the following tools:
-  - relevance_search: Use this to find the most relevant books based on descriptive keywords. This tool may also return user reviews relevant to the query.
-  - list_products: Use to list available books. (Returns 10 at a time, you can suggest the user view the next page).
-  - list_collections: Use to list available book categories.
-  - get_user_cart: Use to get information about the items currently in the user's shopping cart (only use when the user asks about their cart).
+  - relevance_search: Find relevant books based on descriptive keywords.
+  - list_products: List available books (10 at a time).
+  - list_collections: List available categories.
+  - get_user_cart: Check user's shopping cart.
 
   When receiving a query, try searching first. DO NOT ask for more information unless absolutely necessary.
   Briefly explain your recommendations.
-
-  For other services, like placing an order, direct the user to the website.
-  Do not respond if the request is unrelated to the tasks mentioned above.
-
   Respond in markdown format.
 `;
 
@@ -78,7 +85,6 @@ export class Agent {
               description: "Filter by discounted books",
             },
             category_id: {
-              // SỬA LỖI: Schema định nghĩa ID là varchar, nên đổi sang string
               type: ["string", "null"], 
               description:
                 "Filter by category ID (use list_collections to get IDs first)",
@@ -100,7 +106,6 @@ export class Agent {
           if (search) {
             conds.push(
               or(
-                // CẬP NHẬT: Dùng cột của bảng booksTable
                 like(booksTable.title, `%${search}%`),
                 like(booksTable.description, `%${search}%`),
                 like(booksTable.author, `%${search}%`)
@@ -117,7 +122,6 @@ export class Agent {
           }
 
           if (category_id) {
-            // CẬP NHẬT: Logic lọc theo category ID (sử dụng bảng nối bookCategoriesTable)
             conds.push(eq(bookCategoriesTable.category_id, category_id));
           }
 
@@ -133,14 +137,12 @@ export class Agent {
               cover_url: booksTable.cover_url,
             })
             .from(booksTable)
-            // Join với bảng categories để lọc nếu cần
             .leftJoin(
               bookCategoriesTable,
               eq(booksTable.id, bookCategoriesTable.book_id)
             );
 
           if (conds.length) {
-             // Nếu có điều kiện lọc, áp dụng where
             return query
               .where(conds.length > 1 ? and(...conds) : conds[0])
               .offset(offset)
@@ -182,7 +184,6 @@ export class Agent {
             return [];
           }
 
-          // CẬP NHẬT: Query vào db.query.books
           const products = await db.query.booksTable.findMany({
             where: inArray(booksTable.id, productIds),
             columns: {
@@ -227,7 +228,6 @@ export class Agent {
         },
         strict: true,
         async execute({ product_id }) {
-          // CẬP NHẬT: Query bảng books
           const product = await db.query.booksTable.findFirst({
             where: eq(booksTable.id, product_id),
             columns: {
@@ -244,7 +244,6 @@ export class Agent {
               publication_year: true,
               page_count: true,
             },
-             // Có thể include reviews nếu cần: with: { bookReviews: true }
           });
 
           if (!product) {
@@ -255,14 +254,13 @@ export class Agent {
         },
       },
       {
-        name: "list_collections", // Giữ tên tool cũ để đỡ sửa system prompt, nhưng logic là Categories
+        name: "list_collections",
         description: "List all book categories",
         parameters: {
           type: "object",
           properties: {},
         },
         execute: () => {
-          // CẬP NHẬT: Query bảng categories
           return db
             .select({
               id: categoriesTable.id,

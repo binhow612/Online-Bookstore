@@ -1,17 +1,8 @@
-import { getSession } from "@/lib/session";
-import { CartProvider } from "@/components/cart";
-import { SessionProvider } from "@/components/session";
-
-export default async function ShopLayout({
+export default function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-
-  return (
-    <SessionProvider session={session}>
-      <CartProvider initialSession={session}>{children}</CartProvider>
-    </SessionProvider>
-  );
+  // Không cần CartProvider/SessionProvider ở đây nữa vì RootLayout đã lo rồi
+  return <>{children}</>;
 }

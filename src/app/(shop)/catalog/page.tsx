@@ -1,37 +1,43 @@
 import { BookCard } from "@/components/book-card";
 import { getCategories } from "@/lib/data";
-import { Book } from "@/types"; // [!code ++] Import Book type
+import { Book } from "@/types";
 import { Metadata } from "next";
 import Link from "next/link";
 import { CategoryList } from "./category-list";
+// [!code ++] Import component mới
+import { ProductSortBar } from "@/components/catalog/product-sort-bar";
 
 async function BookList({
   page,
   categoryId,
   searchQuery,
+  sort, // [!code ++] Nhận thêm prop sort
 }: {
   page: number;
   categoryId?: string;
   searchQuery?: string;
+  sort?: string; // [!code ++]
 }) {
   const params = new URLSearchParams();
   params.set("page", String(page));
-  params.set("limit", "12"); // Giữ logic 12 cuốn để khớp layout 4 cột
-
+  params.set("limit", "12");
   if (categoryId) params.set("category", categoryId);
   if (searchQuery) params.set("q", searchQuery);
+  if (sort) params.set("sort", sort); // [!code ++] Gửi params sort lên API
 
   const res = await fetch(`http://localhost:3000/api/books?${params}`, {
     cache: "no-store",
   });
   const json = await res.json();
-  // [!code ++] Thêm kiểu dữ liệu : Book[] để sửa lỗi 'book' implicitly has 'any' type
   const books: Book[] = json.data;
+  const totalPages = json.totalPages || 1; // [!code ++] Lấy totalPages từ API
 
   return (
     <div>
+      {/* [!code ++] Thêm Sort Bar vào đây */}
+      <ProductSortBar totalPages={totalPages} currentPage={page} />
+
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {/* TypeScript sẽ tự hiểu 'book' là Book và 'index' là number */}
         {books.map((book, index) => (
           <Link key={book.id} href={`/catalog/${book.id}`}>
             <BookCard
@@ -42,25 +48,26 @@ async function BookList({
         ))}
       </div>
 
-      {/* PAGINATION */}
+      {/* PAGINATION BOTTOM (Giữ nguyên hoặc dùng chung logic với sort bar) */}
       <div className="flex justify-center mt-8 gap-4">
         {page > 1 && (
           <Link
             href={`/catalog?page=${page - 1}${
               categoryId ? `&category=${categoryId}` : ""
-            }${searchQuery ? `&q=${searchQuery}` : ""}`}
-            className="px-4 py-2 border rounded"
+            }${searchQuery ? `&q=${searchQuery}` : ""}${sort ? `&sort=${sort}` : ""}`}
+            className="px-4 py-2 border rounded bg-white hover:bg-gray-50"
           >
             ← Previous
           </Link>
         )}
 
-        {books.length === 12 && (
+        {/* Nút Next logic đơn giản */}
+        {page < totalPages && (
           <Link
             href={`/catalog?page=${page + 1}${
               categoryId ? `&category=${categoryId}` : ""
-            }${searchQuery ? `&q=${searchQuery}` : ""}`}
-            className="px-4 py-2 border rounded"
+            }${searchQuery ? `&q=${searchQuery}` : ""}${sort ? `&sort=${sort}` : ""}`}
+            className="px-4 py-2 border rounded bg-white hover:bg-gray-50"
           >
             Next →
           </Link>
@@ -70,14 +77,13 @@ async function BookList({
   );
 }
 
-// [!code ++] Định nghĩa kiểu cho SearchParams (Next.js 15 yêu cầu Promise)
 type SearchParams = Promise<{
   page?: string;
   category?: string;
   q?: string;
+  sort?: string; // [!code ++]
 }>;
 
-// [!code ++] Thêm kiểu cho props của Page
 export default async function CatalogPage({
   searchParams,
 }: {
@@ -90,7 +96,7 @@ export default async function CatalogPage({
 
   return (
     <div className="container flex flex-col md:flex-row py-12">
-      <div className="md:w-[200px]">
+      <div className="md:w-[200px] mb-8 md:mb-0">
         <CategoryList
           categoryId={params.category}
           categories={categories}
@@ -98,11 +104,12 @@ export default async function CatalogPage({
         />
       </div>
 
-      <div className="md:flex-1">
+      <div className="md:flex-1 md:pl-8">
         <BookList
           page={page}
           categoryId={params.category}
           searchQuery={params.q}
+          sort={params.sort} // [!code ++]
         />
       </div>
     </div>

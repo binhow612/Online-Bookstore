@@ -8,16 +8,29 @@ function Card({
   title,
   description,
   href,
+  variant = "default",
 }: {
   title: string;
   description: string;
   href: string;
+  variant?: "default" | "admin";
 }) {
   return (
-    <Link href={href} className="bg-gray-50 p-4 hover:bg-gray-100 flex">
+    <Link 
+      href={href} 
+      className={`p-4 hover:shadow-md transition flex ${
+        variant === "admin" 
+          ? "bg-teal-600 hover:bg-teal-700" 
+          : "bg-gray-50 hover:bg-gray-100"
+      }`}
+    >
       <div className="flex-1 flex flex-col ml-4">
-        <h2 className="text-lg font-medium">{title}</h2>
-        <p className="text-gray-700 text-sm mb-2">{description}</p>
+        <h2 className={`text-lg font-medium ${variant === "admin" ? "text-white" : ""}`}>
+          {title}
+        </h2>
+        <p className={`text-sm mb-2 ${variant === "admin" ? "text-teal-100" : "text-gray-700"}`}>
+          {description}
+        </p>
       </div>
     </Link>
   );
@@ -25,7 +38,9 @@ function Card({
 
 export default async function AccountPage() {
   const session = await getSession();
-
+  console.log('Session user:', session.user);
+  console.log('User role:', session.user?.role);
+  console.log('Is admin?:', session.user?.role === 'admin');
   return (
     <div className="container max-w-4xl mx-auto py-12">
       <h1 className="text-3xl font-medium mb-4">My Account</h1>
@@ -53,6 +68,14 @@ export default async function AccountPage() {
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+        {session.user?.role === 'admin' && (
+          <Card
+            title="Admin Dashboard"
+            description="Manage your store, products, and orders"
+            href="/admin"
+            variant="admin"
+          />
+        )}
         <Card
           title="My Orders"
           description="View your order history"

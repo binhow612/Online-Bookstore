@@ -44,7 +44,7 @@ export default function Navbar() {
               className="px-3 py-2 rounded-md hover:bg-[var(--warm-white)] flex items-center gap-2"
             >
               <BookOpenIcon className="w-5 h-5" />
-              <span className="hidden lg:inline">Catalog</span>
+              <span className="hidden lg:inline">Catalogue</span>
             </Link>
 
             <Link

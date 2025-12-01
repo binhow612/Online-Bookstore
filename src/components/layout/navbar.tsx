@@ -56,11 +56,11 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/policy"
+              href="/support"
               className="px-3 py-2 rounded-md hover:bg-[var(--warm-white)] flex items-center gap-2"
             >
               <DocumentTextIcon className="w-5 h-5" />
-              <span className="hidden lg:inline">Policies</span>
+              <span className="hidden lg:inline">Support</span>
             </Link>
           </nav>
         </div>
@@ -79,7 +79,6 @@ export default function Navbar() {
             <UserIcon className="w-5 h-5" />
           </Link>
 
-          {/* [!code ++] Sửa href từ /checkout thành /cart */}
           <Link
             href="/cart"
             className="relative px-3 py-2 rounded-md text-sm border border-[rgba(78,59,49,0.06)] hover:bg-[var(--warm-white)] transition-colors"

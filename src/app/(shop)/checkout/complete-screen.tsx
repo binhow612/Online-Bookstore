@@ -26,7 +26,7 @@ export const CompleteScreen: FC<{
       </p>
       <div className="flex gap-4">
         <Link
-          href="/products"
+          href="/catalog"
           className={buttonVariants({ variant: "secondary" })}
         >
           Continue Shopping

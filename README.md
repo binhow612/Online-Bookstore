@@ -137,13 +137,3 @@ Toàn bộ ứng dụng bao gồm Next.js server, Database và AI service có th
 ## 📄 License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
-
-```
-
-### Các thay đổi chính tôi đã thực hiện:
-1.  **Thêm Logo:** Sử dụng thẻ `<img>` html để căn giữa logo cho đẹp mắt (`src="./public/logo.png"`).
-2.  **Bổ sung Tech Stack:** Thêm **Drizzle ORM** và **Tailwind CSS** vì đây là thành phần quan trọng trong code của bạn.
-3.  **Sửa lỗi cú pháp Markdown:** Sửa lại link `git clone` bị thừa dấu ngoặc `[]`.
-4.  **Làm rõ phần cấu hình:** Phân chia các biến trong `.env` thành từng nhóm (DB, PayPal, App) để người khác dễ điền.
-5.  **Cập nhật lệnh Migration:** Thêm chú thích về `drizzle-kit` phòng trường hợp lệnh `npm run migrate` chưa được định nghĩa trong `package.json`.
-```

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useCart } from "@/components/cart";
 import { getCartItemCost, getCartTotalCost, formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // [!code ++] Import Input
-import { Trash2, Minus, Plus, ArrowLeft, ShieldCheck, ShoppingBag, Tag } from "lucide-react"; // [!code ++] Import Tag icon
+import { Input } from "@/components/ui/input";
+import { Trash2, Minus, Plus, ArrowLeft, ShieldCheck, ShoppingBag, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function CartPage() {
@@ -35,7 +35,8 @@ export default function CartPage() {
 
   return (
     <div className="bg-[#F5EDE3] min-h-screen py-10 text-[#4E3B31]">
-      <div className="container mx-auto px-4 max-w-6xl">
+      {/* [!code ++] Tăng max-width lên 7xl để không gian rộng rãi hơn */}
+      <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
         <div className="flex items-center gap-2 mb-8 text-[#4E3B31]/70 hover:text-[#8B6B4F] transition-colors w-fit">
             <ArrowLeft className="w-4 h-4" />
@@ -44,9 +45,11 @@ export default function CartPage() {
 
         <h1 className="text-3xl md:text-4xl font-bold font-serif text-[#8B6B4F] mb-8">Shopping Cart</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* [!code ++] Sử dụng xl:grid-cols-12 để trên laptop nhỏ (lg) nó sẽ stack dọc cho rộng, chỉ chia cột trên màn hình lớn (xl) */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:gap-12">
+          
           {/* LEFT COLUMN: Cart Items List */}
-          <div className="lg:col-span-8">
+          <div className="xl:col-span-8">
             <div className="space-y-4">
               {cart.items.map((item) => {
                 const { cost, originalCost } = getCartItemCost(item);
@@ -80,7 +83,6 @@ export default function CartPage() {
                                 </p>
                             </div>
                             
-                            {/* Remove Button (Desktop) */}
                             <button
                                 onClick={() => dispatch({ type: "remove", productId: item.product.id })}
                                 className="text-[#4E3B31]/40 hover:text-red-500 transition-colors p-1"
@@ -143,57 +145,59 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Order Summary */}
-          <div className="lg:col-span-4">
-            <div className="bg-[#FBF8F3] rounded-xl p-6 shadow-[0_4px_20px_rgba(78,59,49,0.05)] border border-[#4E3B31]/10 sticky top-24">
-                <h2 className="text-xl font-bold text-[#4E3B31] font-serif mb-6">Order Summary</h2>
+          {/* RIGHT COLUMN: Order Summary - Cập nhật giao diện */}
+          <div className="xl:col-span-4 mt-4 xl:mt-0">
+            <div className="bg-[#FBF8F3] rounded-xl p-6 md:p-8 shadow-[0_4px_20px_rgba(78,59,49,0.05)] border border-[#4E3B31]/10 sticky top-24">
+                <h2 className="text-2xl font-bold text-[#4E3B31] font-serif mb-6">Order Summary</h2>
 
-                <div className="space-y-3 text-sm text-[#4E3B31]/80 pb-6 border-b border-[#4E3B31]/10">
-                    <div className="flex justify-between">
-                        <span>Tạm tính ({cart.items.reduce((a, b) => a + b.quantity, 0)} sản phẩm)</span>
-                        <span className="font-medium">${formatPrice(originalTotalCost)}</span>
+                <div className="space-y-4 text-sm text-[#4E3B31]/80 pb-6 border-b border-[#4E3B31]/10">
+                    <div className="flex justify-between items-center">
+                        <span className="text-base">Tạm tính ({cart.items.reduce((a, b) => a + b.quantity, 0)} sản phẩm)</span>
+                        <span className="font-medium text-base">${formatPrice(originalTotalCost)}</span>
                     </div>
                     {saving > 0 && (
-                        <div className="flex justify-between text-[#C8A165]">
-                            <span>Giảm giá</span>
-                            <span>-${formatPrice(saving)}</span>
+                        <div className="flex justify-between items-center text-[#C8A165]">
+                            <span className="text-base">Giảm giá</span>
+                            <span className="font-medium text-base">-${formatPrice(saving)}</span>
                         </div>
                     )}
                     <div className="flex justify-between items-center">
-                        <span>Phí vận chuyển</span>
-                        {/* [!code ++] Badge Free Shipping màu xanh lá */}
-                        <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-sm border border-emerald-200 uppercase tracking-wider">
+                        <span className="text-base">Phí vận chuyển</span>
+                        {/* [!code ++] Badge FREE màu xanh mint dịu mắt hơn */}
+                        <span className="bg-[#d1fae5] text-[#047857] text-xs font-bold px-2 py-1 rounded-sm border border-[#a7f3d0] uppercase tracking-wider">
                             FREE
                         </span>
                     </div>
                 </div>
 
-                {/* [!code ++] Voucher Input Section */}
+                {/* Voucher Input Section */}
                 <div className="py-6 border-b border-[#4E3B31]/10">
-                    <div className="flex gap-2">
-                        <div className="relative flex-1">
+                    <div className="flex gap-3 items-center">
+                        <div className="relative flex-1 min-w-0">
                             <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4E3B31]/40" />
                             <Input 
                                 placeholder="Mã giảm giá" 
-                                className="bg-white border-[#4E3B31]/20 pl-9 focus:ring-[#8B6B4F] text-sm h-10"
+                                className="bg-white border-[#4E3B31]/20 pl-9 focus:ring-[#8B6B4F] text-sm h-11 w-full"
                             />
                         </div>
-                        <Button variant="outline" className="border-[#8B6B4F]/30 text-[#8B6B4F] hover:bg-[#8B6B4F] hover:text-white h-10">
+                        <Button variant="outline" className="shrink-0 border-[#8B6B4F]/30 text-[#8B6B4F] hover:bg-[#8B6B4F] hover:text-white h-11 px-6 whitespace-nowrap font-medium">
                             Áp dụng
                         </Button>
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center py-6">
-                    <span className="text-base font-bold text-[#4E3B31]">Tổng cộng</span>
-                    <span className="text-3xl font-bold text-[#8B6B4F] font-serif">
+                {/* Tổng cộng */}
+                <div className="flex justify-between items-end py-6">
+                    <span className="text-lg font-bold text-[#4E3B31] mb-1">Tổng cộng</span>
+                    <span className="text-4xl font-bold text-[#8B6B4F] font-serif leading-none">
                         ${formatPrice(totalCost)}
                     </span>
                 </div>
 
+                {/* Nút thanh toán: Viết hoa, to hơn */}
                 <Link href="/checkout" className="block w-full">
-                    <Button className="w-full bg-[#8B6B4F] hover:bg-[#6d543e] text-white h-12 text-base font-bold shadow-md rounded-md justify-center uppercase tracking-wide">
-                        Thanh toán ngay
+                    <Button className="w-full bg-[#8B6B4F] hover:bg-[#6d543e] text-white h-14 text-lg font-bold shadow-[0_4px_14px_rgba(139,107,79,0.3)] rounded-md justify-center uppercase tracking-widest transition-transform active:scale-[0.98]">
+                        THANH TOÁN NGAY
                     </Button>
                 </Link>
 

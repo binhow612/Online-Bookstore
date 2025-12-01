@@ -5,17 +5,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCart } from "@/components/cart";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Loader2 } from "lucide-react"; 
+import { ShoppingCart, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { syncCart } from "@/lib/cart"; // Import server action
+import { syncCart } from "@/lib/cart";
+import { cn } from "@/lib/utils";
 
 export function AddToCartBook({ book }: { book: Book }) {
-  const { cart, dispatch } = useCart(); // Lấy cả cart để tính toán sync
+  const { cart, dispatch } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
   const router = useRouter();
 
-  // Chuyển đổi Book thành Product
   const productFromBook: Product = {
     id: book.id,
     name: book.title,
@@ -32,19 +32,31 @@ export function AddToCartBook({ book }: { book: Book }) {
     storage_instructions: null,
   };
 
-  const handleAddToCart = async (isBuyNow: boolean = false) => {
-    if (!Number.isInteger(quantity) || quantity < 1) {
-      toast.error("Vui lòng nhập số lượng hợp lệ (tối thiểu là 1)");
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Chỉ cho phép nhập số
+    if (val === "" || /^[0-9\b]+$/.test(val)) {
+      setQuantity(Number(val));
+    }
+  };
+
+  const handleBlur = () => {
+    if (!quantity || quantity < 1) {
       setQuantity(1);
+    } else if (quantity > book.stock_quantity) {
+      setQuantity(book.stock_quantity);
+    }
+  };
+
+  const handleAddToCart = async (isBuyNow: boolean = false) => {
+    if (!quantity || quantity < 1) {
+      toast.error("Vui lòng nhập số lượng hợp lệ");
       return;
     }
 
     if (isBuyNow) {
       setIsBuyNowLoading(true);
-      
       try {
-        // 1. Tính toán danh sách item mới thủ công để sync lên server trước
-        // (Tránh phụ thuộc vào useEffect của CartProvider vì nó chạy ngầm)
         const currentItems = [...cart.items];
         const existingItemIndex = currentItems.findIndex(
           (i) => i.product.id === productFromBook.id
@@ -63,7 +75,6 @@ export function AddToCartBook({ book }: { book: Book }) {
           });
         }
 
-        // 2. Gọi Server Action để đồng bộ ngay lập tức và ĐỢI nó hoàn thành
         await syncCart({
           items: currentItems.map((item) => ({
             product_id: item.product_id,
@@ -71,23 +82,19 @@ export function AddToCartBook({ book }: { book: Book }) {
           })),
         });
 
-        // 3. Cập nhật Client State (để UI hiển thị đúng nếu quay lại)
         dispatch({
           type: "add",
           product: productFromBook,
           quantity,
         });
 
-        // 4. Sau khi server đã nhận dữ liệu, mới chuyển trang
         router.push("/checkout");
-        
       } catch (error) {
         console.error(error);
         toast.error("Có lỗi xảy ra, vui lòng thử lại");
         setIsBuyNowLoading(false);
       }
     } else {
-      // Logic thêm vào giỏ hàng bình thường (không cần await sync)
       dispatch({
         type: "add",
         product: productFromBook,
@@ -97,69 +104,62 @@ export function AddToCartBook({ book }: { book: Book }) {
     }
   };
 
-  const onBlur = () => {
-    if (!Number.isInteger(quantity) || quantity < 1) {
-      setQuantity(1);
-    }
-  };
-
   return (
     <div className="flex flex-col gap-6">
-      {/* PHẦN 1: CHỌN SỐ LƯỢNG (Style giống Shopee) */}
-      <div className="flex items-center gap-6">
-        <span className="text-[#757575] font-medium min-w-[80px]">Số lượng</span>
-        
+      {/* Chọn số lượng */}
+      <div className="flex gap-4 items-center">
+        <span className="text-[#4E3B31]/70 w-24 font-medium">Số lượng</span>
         <div className="flex items-center">
-          <div className="flex items-center border border-[#8B6B4F]/30 rounded-sm h-8 bg-white">
+          <div className="flex items-center border border-[#8B6B4F]/40 rounded-md bg-white h-9">
             <button
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="w-8 h-full flex items-center justify-center border-r border-[#8B6B4F]/30 hover:bg-[#F5EDE3] text-[#4E3B31] transition-colors disabled:opacity-50"
+              className="w-8 h-full flex items-center justify-center border-r border-[#8B6B4F]/40 hover:bg-[#F5EDE3] text-[#4E3B31] transition-colors"
               disabled={isBuyNowLoading}
             >
               -
             </button>
 
-            {/* Sửa lỗi lệch số: dùng p-0, m-0, text-center, h-full */}
+            {/* SỬA: Dùng type="text" để loại bỏ mũi tên spin button mặc định */}
             <input
-              type="number"
-              className="w-14 h-full text-center border-none outline-none bg-transparent text-[#4E3B31] font-medium focus:ring-0 p-0 m-0 appearance-none flex items-center justify-center"
-              value={quantity}
-              min={1}
-              step={1}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              onBlur={onBlur}
+              type="text"
+              inputMode="numeric"
+              className="w-14 h-full text-center border-none outline-none bg-transparent text-[#4E3B31] font-medium focus:ring-0 p-0 m-0"
+              value={quantity || ""}
+              onChange={handleQuantityChange}
+              onBlur={handleBlur}
               disabled={isBuyNowLoading}
             />
 
             <button
-              onClick={() => setQuantity((q) => q + 1)}
-              className="w-8 h-full flex items-center justify-center border-l border-[#8B6B4F]/30 hover:bg-[#F5EDE3] text-[#4E3B31] transition-colors disabled:opacity-50"
+              onClick={() => setQuantity((q) => Math.min(book.stock_quantity, q + 1))}
+              className="w-8 h-full flex items-center justify-center border-l border-[#8B6B4F]/40 hover:bg-[#F5EDE3] text-[#4E3B31] transition-colors"
               disabled={isBuyNowLoading}
             >
               +
             </button>
           </div>
-          <span className="text-[#757575] text-sm ml-4">{book.stock_quantity} sản phẩm có sẵn</span>
+          <span className="text-[#4E3B31]/70 text-sm ml-4">
+            {book.stock_quantity} sản phẩm có sẵn
+          </span>
         </div>
       </div>
 
-      {/* PHẦN 2: HAI NÚT CHỨC NĂNG */}
-      <div className="flex items-center gap-4">
-        {/* Nút Thêm vào giỏ hàng */}
-        <Button 
+      {/* Các nút bấm */}
+      <div className="flex flex-wrap gap-4">
+        <Button
           onClick={() => handleAddToCart(false)}
           disabled={isBuyNowLoading}
-          className="bg-[#F5EDE3] border border-[#8B6B4F] text-[#8B6B4F] hover:bg-[#E8DFC5] h-12 px-6 text-base font-medium rounded-sm shadow-sm"
+          variant="outline"
+          className="bg-[#F5EDE3] border-[#8B6B4F] text-[#8B6B4F] hover:bg-[#E8DFC5] h-12 px-8 text-base font-medium rounded-md shadow-sm"
         >
           <ShoppingCart className="w-5 h-5 mr-2" />
           Thêm Vào Giỏ Hàng
         </Button>
 
-        {/* Nút Mua ngay */}
-        <Button 
+        <Button
           onClick={() => handleAddToCart(true)}
           disabled={isBuyNowLoading}
-          className="bg-[#8B6B4F] hover:bg-[#6d543e] text-white h-12 px-8 text-base font-bold rounded-sm shadow-md border-none min-w-[140px]"
+          className="bg-gradient-to-b from-[#C8A165] to-[#8B6B4F] hover:opacity-90 text-white h-12 px-12 text-base font-bold rounded-md shadow-[0_6px_14px_rgba(139,107,79,0.14)] border-none min-w-[160px]"
         >
           {isBuyNowLoading ? (
             <>

@@ -61,6 +61,7 @@ Làm theo các bước sau để chạy dự án trên máy cá nhân.
     ```bash
     # Database Configuration
     DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
+    POSTGRES_PASSWORD=postgres
 
     # Milvus (Vector DB) Configuration
     MILVUS_HOST=localhost:19530
@@ -74,6 +75,7 @@ Làm theo các bước sau để chạy dự án trên máy cá nhân.
     JWT_SECRET=your_complex_random_string
     SECRET_KEY=your_secret_key
     APP_URL=http://localhost:3000
+    OPENAI_API_KEY=your_OPENAI_API_KEY
     ```
 
 4.  **Khởi chạy Database (PostgreSQL & Milvus):**

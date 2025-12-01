@@ -5,7 +5,7 @@
   <br />
 </div>
 
-**The Book Haven** (còn được biết đến với tên "OldBookSaigon") là dự án cho môn học *Thương mại Điện tử (CO3027)* tại Trường Đại học Bách khoa, Đại học Quốc gia Thành phố Hồ Chí Minh.
+**The Book Haven** là dự án cho môn học *Thương mại Điện tử (CO3027)* tại Trường Đại học Bách khoa, Đại học Quốc gia Thành phố Hồ Chí Minh.
 
 Mục tiêu của dự án là:
 

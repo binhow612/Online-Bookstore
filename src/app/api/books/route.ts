@@ -21,7 +21,7 @@ export async function GET(req: Request) {
       orderBy: asc(booksTable.id)
     });
     books = books.filter((b) =>
-      b.bookCategories.some((c) => c.categoryId === category)
+      b.bookCategories.some((c) => c.category_id === category)
     );
   } else {
     books = await db.query.booksTable.findMany({

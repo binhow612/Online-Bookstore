@@ -18,7 +18,7 @@ import {
 import { ChatProvider, ChatModal } from "@/components/chat";
 
 // ⭐ Toaster (để hiển thị toast Add to Cart)
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "sonner";
 
 const merriweather = Merriweather({
   subsets: ["latin"],

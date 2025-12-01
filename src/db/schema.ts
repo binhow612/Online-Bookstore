@@ -234,6 +234,7 @@ export const booksTable = pgTable("books", {
 
 export const bookRelations = relations(booksTable, ({ many }) => ({
   bookReviews: many(bookReviewsTable),
+  bookCategories: many(bookCategoriesTable),
 }));
 
 export type BookEntity = InferSelectModel<typeof booksTable> & {

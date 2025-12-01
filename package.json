@@ -33,6 +33,7 @@
     "jsonwebtoken": "^9.0.2",
     "libphonenumber-js": "^1.11.14",
     "lru-cache": "^11.0.2",
+    "lucide-react": "^0.555.0",
     "nanoid": "^5.0.8",
     "next": "15.0.3",
     "openai": "^4.72.0",
@@ -43,7 +44,7 @@
     "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0",
     "server-only": "^0.0.1",
-    "sonner": "^1.7.0",
+    "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.4",
     "zod": "^3.23.8",
     "zod-form-data": "^2.0.2"

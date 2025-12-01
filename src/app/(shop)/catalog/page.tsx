@@ -1,5 +1,6 @@
 import { BookCard } from "@/components/book-card";
 import { getCategories } from "@/lib/data";
+import { Book } from "@/types"; // [!code ++] Import Book type
 import { Metadata } from "next";
 import Link from "next/link";
 import { CategoryList } from "./category-list";
@@ -15,7 +16,7 @@ async function BookList({
 }) {
   const params = new URLSearchParams();
   params.set("page", String(page));
-  params.set("limit", "10");
+  params.set("limit", "12"); // Giữ logic 12 cuốn để khớp layout 4 cột
 
   if (categoryId) params.set("category", categoryId);
   if (searchQuery) params.set("q", searchQuery);
@@ -24,11 +25,13 @@ async function BookList({
     cache: "no-store",
   });
   const json = await res.json();
-  const books = json.data;
+  // [!code ++] Thêm kiểu dữ liệu : Book[] để sửa lỗi 'book' implicitly has 'any' type
+  const books: Book[] = json.data;
 
   return (
     <div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {/* TypeScript sẽ tự hiểu 'book' là Book và 'index' là number */}
         {books.map((book, index) => (
           <Link key={book.id} href={`/catalog/${book.id}`}>
             <BookCard
@@ -52,7 +55,7 @@ async function BookList({
           </Link>
         )}
 
-        {books.length === 10 && (
+        {books.length === 12 && (
           <Link
             href={`/catalog?page=${page + 1}${
               categoryId ? `&category=${categoryId}` : ""
@@ -67,7 +70,19 @@ async function BookList({
   );
 }
 
-export default async function CatalogPage({ searchParams }) {
+// [!code ++] Định nghĩa kiểu cho SearchParams (Next.js 15 yêu cầu Promise)
+type SearchParams = Promise<{
+  page?: string;
+  category?: string;
+  q?: string;
+}>;
+
+// [!code ++] Thêm kiểu cho props của Page
+export default async function CatalogPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const params = await searchParams;
 
   const page = Number(params.page || 1);

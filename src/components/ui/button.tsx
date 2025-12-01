@@ -10,7 +10,12 @@ export const buttonVariants = cva({
         "bg-black text-white hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-500",
       secondary:
         "bg-white text-black border border-black hover:bg-gray-100 disabled:bg-gray-300 disabled:text-gray-500",
-    },
+      outline:
+        "bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400", 
+      // [!code ++] Thêm variant ghost (tùy chọn, nếu cần dùng nút trong suốt)
+      ghost:
+        "bg-transparent hover:bg-gray-100 text-gray-700",
+      },
     size: {
       sm: "text-sm px-2 py-1",
       md: "text-md px-4 py-2",

@@ -1,4 +1,4 @@
-import { getOrderByIdAndUserId, getOrdersByUserId } from "@/lib/data";
+import { getOrderByIdAndUserId } from "@/lib/data";
 import { getSession } from "@/lib/session";
 import { formatPrice } from "@/lib/utils";
 import { BookOrderItemEntity } from "@/db/schema";
@@ -59,16 +59,8 @@ const getOrderFromProps = async (props: Props) => {
   return order;
 };
 
-const getOrderNumber = async (orderId: number, userId: number) => {
-  const allOrders = await getOrdersByUserId(userId);
-  const orderIndex = allOrders.findIndex(order => order.id === orderId);
-  return orderIndex !== -1 ? allOrders.length - orderIndex : orderId;
-};
-
 export default async function OrderPage(props: Props) {
   const order = await getOrderFromProps(props);
-  const session = await getSession();
-  const orderNumber = session.user ? await getOrderNumber(order.id, session.user.id) : order.id;
   const itemCount = order.bookOrderItems?.length ?? 0;
 
   return (
@@ -76,7 +68,7 @@ export default async function OrderPage(props: Props) {
       <Link href="/orders" className="text-sm text-gray-700 hover:underline">
         ← Back to Orders
       </Link>
-      <h1 className="text-3xl font-medium mb-4 mt-2">Order #{orderNumber}</h1>
+      <h1 className="text-3xl font-medium mb-4 mt-2">Order #{order.id}</h1>
       <div className="flex flex-col gap-1 mb-6">
         <div className="flex items-center gap-4 p-2 bg-gray-50 rounded">
           <div className="bg-teal-700 text-teal-50 px-2 py-0.5 rounded text-sm">
@@ -105,11 +97,9 @@ export default async function OrderPage(props: Props) {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const order = await getOrderFromProps(props);
-  const session = await getSession();
-  const orderNumber = session.user ? await getOrderNumber(order.id, session.user.id) : order.id;
   
   return {
-    title: `Order #${orderNumber} - The Book Haven`,
+    title: `Order #${order.id} - The Book Haven`,
     robots: "noindex",
   };
 }

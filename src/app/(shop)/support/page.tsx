@@ -60,8 +60,8 @@ function ContactInfo() {
           <PhoneIcon className="w-6 h-6 text-[var(--wood-brown)] flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium text-gray-900">Phone</p>
-            <a href="tel:+1234567890" className="text-gray-600 hover:underline">
-              +1 (234) 567-890
+            <a href="tel:1900123456" className="text-gray-600 hover:underline">
+              1900 123 456
             </a>
             <p className="text-sm text-gray-500">Mon-Fri, 9am-6pm EST</p>
           </div>

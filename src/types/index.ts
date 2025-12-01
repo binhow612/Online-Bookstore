@@ -25,6 +25,7 @@ export type User = Pick<
   | "address"
   | "city"
   | "country_code"
+  | "role"
 >;
 
 export interface CreateUserAccountInput {

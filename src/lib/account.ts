@@ -23,6 +23,7 @@ function userEntityToUser(userEntity: UserEntity): User {
     address: userEntity.address,
     city: userEntity.city,
     country_code: userEntity.country_code,
+    role: userEntity.role,
   };
 }
 

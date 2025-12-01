@@ -21,6 +21,8 @@ import Link from "next/link";
 import { RefObject, useRef, useState } from "react";
 import { CompleteScreen } from "./complete-screen";
 import { Loader2, Lock } from "lucide-react";
+import { toast } from "sonner";
+import { createOrderAction } from "./action"; // Import Server Action
 
 // --- COMPONENTS CON ---
 
@@ -371,35 +373,74 @@ export function CheckoutPageContent({
   const formRef = useRef<HTMLFormElement>(null);
 
   // Xử lý khi bấm "Đặt hàng"
+  // Xử lý khi bấm "Đặt hàng"
   const handlePlaceOrder = async () => {
-      if (!formRef.current) return;
-      
-      // 1. Validate Form
-      if (!formRef.current.checkValidity()) {
-          formRef.current.reportValidity();
-          return;
-      }
+    if (!formRef.current) return;
 
-      setIsProcessing(true);
+    // 1. Validate Form (HTML5 Validation)
+    if (!formRef.current.checkValidity()) {
+      formRef.current.reportValidity();
+      return;
+    }
 
-      // 2. Simulate API Call (Giả lập delay mạng)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsProcessing(true);
 
-      // 3. Tạo mock order object để hiển thị trang success
+    try {
       const formData = new FormData(formRef.current);
-      const mockOrder: any = {
-          id: Math.floor(Math.random() * 10000),
-          total_price: totalCost.toString(),
-          shipping_first_name: formData.get("shipping_first_name"),
-          shipping_last_name: formData.get("shipping_last_name"),
-          status: "processing",
-          created_at: new Date(),
-          // ... các field khác
+
+      // 2. Chuẩn bị dữ liệu để gửi xuống Server Action
+      // Lưu ý: Các key 'name' trong input form phải khớp với logic lấy dữ liệu dưới đây
+      const orderData = {
+        items: cart.items,
+        shippingAddress: {
+          firstName: formData.get("shipping_first_name") as string,
+          lastName: formData.get("shipping_last_name") as string,
+          email: formData.get("guest_email") as string,
+          phone: formData.get("shipping_phone_number") as string,
+          address: formData.get("shipping_address") as string,
+          city: formData.get("shipping_city") as string,
+          countryCode: formData.get("shipping_country_code") as string,
+        },
+        totalPrice: totalCost,
+        paymentMethod: paymentMethod,
       };
 
-      setCompletedOrder(mockOrder);
-      dispatch({ type: "clear" });
+      // 3. GỌI SERVER ACTION THẬT (file action.ts)
+      const result = await createOrderAction(orderData);
+
+      if (result?.error) {
+        // Trường hợp Server trả về lỗi (ví dụ: lỗi DB, lỗi validate)
+        toast.error(result.error);
+        setIsProcessing(false);
+        return;
+      }
+
+      if (result?.success && result.orderId) {
+        // 4. Thành công: Tạo object Order để hiển thị trang CompleteScreen
+        const completedOrderData: Order = {
+          id: result.orderId, // ID thật từ Database
+          total_price: totalCost.toString(),
+          shipping_first_name: orderData.shippingAddress.firstName,
+          shipping_last_name: orderData.shippingAddress.lastName,
+          shipping_address: orderData.shippingAddress.address,
+          shipping_city: orderData.shippingAddress.city,
+          shipping_country_code: orderData.shippingAddress.countryCode,
+          status: "processing",
+          created_at: new Date(),
+          // Các trường khác map tạm để hiển thị, hoặc fetch lại nếu cần
+          items: [], 
+        } as any; // Cast as any nếu type Order của bạn quá strict và thiếu trường
+
+        setCompletedOrder(completedOrderData);
+        dispatch({ type: "clear" }); // Xóa giỏ hàng
+      }
+      
+    } catch (error) {
+      console.error("Lỗi frontend:", error);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
       setIsProcessing(false);
+    }
   };
 
   if (completedOrder) {

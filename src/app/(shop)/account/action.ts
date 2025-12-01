@@ -6,7 +6,7 @@ import { getSession, clearSession } from "@/lib/session";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { compare, hash } from "@/lib/hash";
+import { verifyPassword, hashPassword } from "@/lib/hash";
 import { z } from "zod";
 
 export type FormState = {
@@ -104,12 +104,12 @@ export async function changePasswordAction(
     return { error: "User not found" };
   }
 
-  const isPasswordValid = await compare(parsed.data.currentPassword, user.password_hash);
+  const isPasswordValid = await verifyPassword(parsed.data.currentPassword, user.password_hash);
   if (!isPasswordValid) {
     return { error: "Incorrect current password" };
   }
 
-  const newPasswordHash = await hash(parsed.data.newPassword);
+  const newPasswordHash = await hashPassword(parsed.data.newPassword);
 
   try {
     await db

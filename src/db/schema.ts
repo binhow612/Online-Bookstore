@@ -121,8 +121,10 @@ export const ordersTable = pgTable("orders", {
   shipping_first_name: varchar({ length: 255 }).notNull(),
   shipping_last_name: varchar({ length: 255 }).notNull(),
   shipping_address: text().notNull(),
+  shipping_phone_number: varchar({ length: 50 }),
   shipping_city: varchar({ length: 100 }).notNull(),
   shipping_country_code: varchar({ length: 10 }).notNull(),
+  payment_method: varchar({ length: 50 }),
   created_at: timestamp().notNull().defaultNow(),
 });
 

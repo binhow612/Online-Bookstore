@@ -46,7 +46,7 @@ Làm theo các bước sau để chạy dự án trên máy cá nhân.
    ```bash
    git clone [https://github.com/binhow612/Online-Bookstore.git](https://github.com/binhow612/Online-Bookstore.git)
    cd Online-Bookstore
-````
+    ```
 
 2.  **Cài đặt các thư viện (Dependencies):**
 

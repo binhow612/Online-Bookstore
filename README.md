@@ -1,4 +1,4 @@
-# The Book Haven (OldBookSaigon)
+# The Book Haven
 
 <div align="center">
   <img src="./public/logo.png" alt="The Book Haven Logo" width="200" />

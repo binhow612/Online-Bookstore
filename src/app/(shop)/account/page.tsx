@@ -16,14 +16,14 @@ import { cn, formatPrice } from "@/lib/utils";
 import { db } from "@/db";
 import { ordersTable } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
-import { AddressForm, ChangePasswordForm } from "./account-forms";
+// SỬA: Đổi AddressForm thành PersonalInfoForm cho khớp với file account-forms.tsx
+import { PersonalInfoForm, ChangePasswordForm } from "./account-forms";
 
 export const metadata: Metadata = {
   title: "My Account - The Book Haven",
   description: "Manage your account and view orders.",
 };
 
-// Cập nhật tab "addresses" thành "personal-info" cho đúng ngữ cảnh
 type TabType = "dashboard" | "orders" | "personal-info" | "password";
 
 export default async function AccountPage({
@@ -232,7 +232,8 @@ export default async function AccountPage({
             <div className="flex-1 w-full bg-white p-8 md:p-10 rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-[#4E3B31]/10 min-h-[500px]">
                 {currentTab === "dashboard" && <DashboardTab />}
                 {currentTab === "orders" && <OrdersTab />}
-                {currentTab === "personal-info" && <AddressForm user={user} />}
+                {/* SỬA: Thay AddressForm bằng PersonalInfoForm */}
+                {currentTab === "personal-info" && <PersonalInfoForm user={user} />}
                 {currentTab === "password" && <ChangePasswordForm />}
             </div>
         </div>

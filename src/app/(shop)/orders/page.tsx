@@ -18,7 +18,7 @@ const getDescription = (order: Order) => {
   return `${itemNames}${remainingText}`;
 };
 
-function OrderCard({ order, orderNumber }: { order: Order; orderNumber: number }) {
+function OrderCard({ order }: { order: Order }) {
   const firstBookItem = order.bookOrderItems?.[0];
 
   return (
@@ -33,7 +33,7 @@ function OrderCard({ order, orderNumber }: { order: Order; orderNumber: number }
         />
       )}
       <div className="flex-1 flex flex-col ml-4">
-        <h2 className="text-lg font-medium">Order #{orderNumber}</h2>
+        <h2 className="text-lg font-medium">Order #{order.id}</h2>
         <p className="text-gray-700 text-sm mb-2">
           {format(new Date(order.created_at), "MMMM d, yyyy h:mm a")}
         </p>
@@ -63,9 +63,9 @@ export default async function OrdersPage() {
         </p>
       )}
       <div className="flex flex-col gap-4">
-        {orders.map((order, index) => (
+        {orders.map((order) => (
           <Link key={order.id} href={`/orders/${order.id}`}>
-            <OrderCard order={order} orderNumber={orders.length - index} />
+            <OrderCard order={order} />
           </Link>
         ))}
       </div>

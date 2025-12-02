@@ -19,7 +19,7 @@ export default async function LoginPage() {
         </h1>
 
         <p className="text-center text-[var(--dark-coffee)] mb-8">
-          Login to continue your reading journey 📚
+          Login to continue your reading journey
         </p>
 
         <LoginForm />

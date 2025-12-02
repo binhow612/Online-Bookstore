@@ -63,7 +63,7 @@ export function LoginForm() {
       <Button
         type="submit"
         variant="primary"
-        className="w-full bg-[var(--wood-brown)] hover:bg-[var(--dark-coffee)] text-white py-3 text-lg"
+        className="w-full flex bg-[var(--wood-brown)] hover:bg-[var(--dark-coffee)] text-white py-3 text-lg justify-center"
         disabled={pending}
       >
         {pending ? "Logging in..." : "Login"}

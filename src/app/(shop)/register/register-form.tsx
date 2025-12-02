@@ -23,11 +23,16 @@ export function RegisterForm() {
   );
 
   return (
-    <form action={formAction} className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Your Account</h2>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1">
+    <form action={formAction} className="flex flex-col gap-10">
+
+      {/* ACCOUNT SECTION */}
+      <div className="bg-white p-6 rounded-xl border border-[rgba(78,59,49,0.12)] shadow-sm flex flex-col gap-4">
+        <h2 className="text-xl font-semibold text-[var(--wood-brown)]">
+          Your Account
+        </h2>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
             <Input
               type="text"
               placeholder="First Name"
@@ -37,6 +42,7 @@ export function RegisterForm() {
               required
               className="flex-1"
             />
+
             <Input
               type="text"
               placeholder="Last Name"
@@ -47,6 +53,7 @@ export function RegisterForm() {
               className="flex-1"
             />
           </div>
+
           <Input
             type="email"
             placeholder="Email"
@@ -55,6 +62,7 @@ export function RegisterForm() {
             autoComplete="email"
             required
           />
+
           <Input
             type="password"
             placeholder="Password"
@@ -64,29 +72,36 @@ export function RegisterForm() {
           />
         </div>
       </div>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Your Information (Optional)</h2>
-        <p className="text-gray-500 text-sm">
-          The information below will be used to prefill your details while
-          shopping to provide you with a better experience.
+
+      {/* OPTIONAL INFO */}
+      <div className="bg-white p-6 rounded-xl border border-[rgba(78,59,49,0.12)] shadow-sm flex flex-col gap-4">
+        <h2 className="text-xl font-semibold text-[var(--wood-brown)]">
+          Your Information (Optional)
+        </h2>
+        <p className="text-sm text-gray-500">
+          Prefill your details for a smoother checkout experience.
         </p>
-        <div className="flex flex-col gap-1">
+
+        <div className="flex flex-col gap-3">
           <Input
             type="text"
             placeholder="Address"
             name="address"
             defaultValue={state.values.address}
           />
+
           <Input
             type="text"
             placeholder="City"
             name="city"
             defaultValue={state.values.city}
           />
+
           <CountrySelect
             name="country_code"
             defaultValue={state.values.country_code || DEFAULT_COUNTRY_CODE}
           />
+
           <Input
             type="tel"
             placeholder="Phone Number"
@@ -95,14 +110,16 @@ export function RegisterForm() {
           />
         </div>
       </div>
+
       {state.result && "error" in state.result && (
-        <div className="text-red-600">{state.result.error}</div>
+        <div className="text-red-600 text-center">{state.result.error}</div>
       )}
+
       <Button
         type="submit"
         variant="primary"
-        className="w-full"
         disabled={pending}
+        className="w-full py-3 text-lg font-medium rounded-xl shadow-md"
       >
         Create Account
       </Button>

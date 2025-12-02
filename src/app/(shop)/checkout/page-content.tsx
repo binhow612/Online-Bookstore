@@ -54,288 +54,307 @@ function SummaryItemCard({ item }: { item: CartItem }) {
 
 // --- FORM GIAO HÀNG ---
 function ShippingSection({
-  formRef,
+  formRef,
 }: {
-  formRef: RefObject<HTMLFormElement | null>;
+  formRef: RefObject<HTMLFormElement | null>;
 }) {
-  const session = useSession();
+  const session = useSession();
 
-  const onUseAccountDetails = () => {
-    // ... giữ nguyên
-  };
+  const onUseAccountDetails = () => {
+    const form = formRef.current;
+    if (!form || !session.user) return;
+    
+    const setVal = (name: string, val: string | null | undefined) => {
+        const el = form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement;
+        if (el) el.value = val || "";
+    };
 
-  return (
-    <div className="bg-[#FBF8F3] p-6 md:p-8 rounded-xl shadow-[0_2px_8px_rgba(78,59,49,0.05)] border border-[#4E3B31]/10">
-      <div className="flex items-center justify-between mb-6 border-b border-[#4E3B31]/10 pb-4">
-        {/* Giữ nguyên Header */}
-      </div>
+    setVal("shipping_first_name", session.user.first_name);
+    setVal("shipping_last_name", session.user.last_name);
+    setVal("shipping_address", session.user.address);
+    setVal("shipping_city", session.user.city);
+    setVal("shipping_country_code", session.user.country_code);
+    setVal("shipping_phone_number", session.user.phone_number);
+    if(session.user.email) setVal("guest_email", session.user.email);
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="mb-4"> {/* Đã thay đổi: Loại bỏ space-y-1.5 và dùng mb-4 cho khoảng cách giữa các div */}
-             <label className="text-sm font-medium text-[#4E3B31]/80 block mb-1">Họ</label> {/* Thêm class block và mb-1 */}
-             <Input
-                type="text"
-                placeholder="Nguyễn"
-                name="shipping_first_name"
-                defaultValue={session.user?.first_name || undefined}
-                required
-                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
-            />
-        </div>
-        <div className="mb-4"> {/* Đã thay đổi */}
-            <label className="text-sm font-medium text-[#4E3B31]/80 block mb-1">Tên</label> {/* Thêm class block và mb-1 */}
-            <Input
-                type="text"
-                placeholder="Văn A"
-                name="shipping_last_name"
-                defaultValue={session.user?.last_name || undefined}
-                required
-                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
-            />
-        </div>
-        
-        <div className="md:col-span-2 mb-4"> {/* Đã thay đổi */}
-            <label className="text-sm font-medium text-[#4E3B31]/80 block mb-1">Email</label> {/* Thêm class block và mb-1 */}
-            <Input
-                type="email"
-                placeholder="email@example.com"
-                name="guest_email"
-                defaultValue={session.user?.email || undefined}
-                required
-                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
-            />
-        </div>
+  return (
+    <div className="bg-[#FBF8F3] p-6 md:p-8 rounded-xl shadow-[0_2px_8px_rgba(78,59,49,0.05)] border border-[#4E3B31]/10">
+      <div className="flex items-center justify-between mb-6 border-b border-[#4E3B31]/10 pb-4">
+        <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#8B6B4F]/10 rounded-full text-[#8B6B4F]">
+                <MapPinIcon className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-[#4E3B31] font-serif">Địa chỉ giao hàng</h2>
+        </div>
+        {session.user && (
+          <button
+            className="text-xs font-medium text-white bg-[#8B6B4F] hover:bg-[#6d543e] px-4 py-2 rounded-full transition-all shadow-sm hover:shadow"
+            onClick={onUseAccountDetails}
+            type="button"
+          >
+            Dùng thông tin tài khoản
+          </button>
+        )}
+      </div>
 
-        <div className="md:col-span-2 mb-4"> {/* Đã thay đổi */}
-            <label className="text-sm font-medium text-[#4E3B31]/80 block mb-1">Địa chỉ nhận hàng</label> {/* Thêm class block và mb-1 */}
-            <Input
-                type="text"
-                placeholder="Số nhà, tên đường, phường/xã..."
-                name="shipping_address"
-                defaultValue={session.user?.address || undefined}
-                required
-                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
-            />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-1.5">
+             <label className="text-sm font-medium text-[#4E3B31]/80">Họ</label>
+             <Input
+                type="text"
+                placeholder="Nguyễn"
+                name="shipping_first_name"
+                defaultValue={session.user?.first_name || undefined}
+                required
+                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
+            />
+        </div>
+        <div className="space-y-1.5">
+            <label className="text-sm font-medium text-[#4E3B31]/80">Tên</label>
+            <Input
+                type="text"
+                placeholder="Văn A"
+                name="shipping_last_name"
+                defaultValue={session.user?.last_name || undefined}
+                required
+                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
+            />
+        </div>
+        
+        <div className="space-y-1.5 md:col-span-2">
+            <label className="text-sm font-medium text-[#4E3B31]/80">Email</label>
+            <Input
+                type="email"
+                placeholder="email@example.com"
+                name="guest_email"
+                defaultValue={session.user?.email || undefined}
+                required
+                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
+            />
+        </div>
 
-        <div className="mb-4"> {/* Đã thay đổi */}
-            <label className="text-sm font-medium text-[#4E3B31]/80 block mb-1">Thành phố</label> {/* Thêm class block và mb-1 */}
-            <Input
-                type="text"
-                placeholder="Hồ Chí Minh"
-                name="shipping_city"
-                defaultValue={session.user?.city || undefined}
-                required
-                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
-            />
-        </div>
+        <div className="space-y-1.5 md:col-span-2">
+            <label className="text-sm font-medium text-[#4E3B31]/80">Địa chỉ nhận hàng</label>
+            <Input
+                type="text"
+                placeholder="Số nhà, tên đường, phường/xã..."
+                name="shipping_address"
+                defaultValue={session.user?.address || undefined}
+                required
+                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
+            />
+        </div>
 
-        <div className="mb-4"> {/* Đã thay đổi */}
-             <label className="text-sm font-medium text-[#4E3B31]/80 block mb-1">Quốc gia</label> {/* Thêm class block và mb-1 */}
-             <CountrySelect
-                name="shipping_country_code"
-                defaultValue={session.user?.country_code || "VN"}
-                required
-                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
-            />
-        </div>
+        <div className="space-y-1.5">
+            <label className="text-sm font-medium text-[#4E3B31]/80">Thành phố</label>
+            <Input
+                type="text"
+                placeholder="Hồ Chí Minh"
+                name="shipping_city"
+                defaultValue={session.user?.city || undefined}
+                required
+                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
+            />
+        </div>
 
-        <div className="md:col-span-2"> {/* Thay đổi cuối cùng không cần mb-4 */}
-            <label className="text-sm font-medium text-[#4E3B31]/80 block mb-1">Số điện thoại</label> {/* Thêm class block và mb-1 */}
-            <Input
-                placeholder="+84 901 234 567"
-                type="tel"
-                name="shipping_phone_number"
-                defaultValue={session.user?.phone_number || undefined}
-                required
-                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
-            />
-        </div>
-      </div>
-    </div>
-  );
+        <div className="space-y-1.5">
+             <label className="text-sm font-medium text-[#4E3B31]/80">Quốc gia</label>
+             <CountrySelect
+                name="shipping_country_code"
+                defaultValue={session.user?.country_code || "VN"}
+                required
+                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
+            />
+        </div>
+
+        <div className="space-y-1.5 md:col-span-2">
+            <label className="text-sm font-medium text-[#4E3B31]/80">Số điện thoại</label>
+            <Input
+                placeholder="+84 901 234 567"
+                type="tel"
+                name="shipping_phone_number"
+                defaultValue={session.user?.phone_number || undefined}
+                required
+                className="bg-white border-[#4E3B31]/20 focus:ring-[#8B6B4F] h-11"
+            />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // --- PAYMENT METHOD SECTION ---
-// Cần đảm bảo các component/hook này được import:
-// import { CreditCardIcon, TruckIcon, QrCodeIcon, BanknotesIcon, UserIcon, Lock, Input, formatPrice } from "...";
-// import { cn } from "..."; // Hàm utility để hợp nhất class Tailwind
-
 type PaymentMethod = "cod" | "bank" | "card";
 
 function PaymentSection({
-  method,
-  setMethod,
-  totalCost
+  method,
+  setMethod,
+  totalCost
 }: {
-  method: PaymentMethod;
-  setMethod: (m: PaymentMethod) => void;
-  totalCost: number;
+  method: PaymentMethod;
+  setMethod: (m: PaymentMethod) => void;
+  totalCost: number;
 }) {
-  return (
-    <div className="bg-[#FBF8F3] p-6 md:p-8 rounded-xl shadow-[0_2px_8px_rgba(78,59,49,0.05)] border border-[#4E3B31]/10 mt-6">
-        <div className="flex items-center gap-3 mb-6 border-b border-[#4E3B31]/10 pb-4">
-            <div className="p-2 bg-[#8B6B4F]/10 rounded-full text-[#8B6B4F]">
-                <CreditCardIcon className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold text-[#4E3B31] font-serif">Phương thức thanh toán</h2>
-        </div>
+  return (
+    <div className="bg-[#FBF8F3] p-6 md:p-8 rounded-xl shadow-[0_2px_8px_rgba(78,59,49,0.05)] border border-[#4E3B31]/10 mt-6">
+        <div className="flex items-center gap-3 mb-6 border-b border-[#4E3B31]/10 pb-4">
+            <div className="p-2 bg-[#8B6B4F]/10 rounded-full text-[#8B6B4F]">
+                <CreditCardIcon className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-[#4E3B31] font-serif">Phương thức thanh toán</h2>
+        </div>
 
-        <div className="space-y-4">
-            {/* Option 1: COD */}
-            <label className={cn(
-                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all",
-                method === "cod" 
-                    ? "border-[#8B6B4F] bg-[#F5EDE3] ring-1 ring-[#8B6B4F]" 
-                    : "border-[#4E3B31]/20 bg-white hover:border-[#8B6B4F]/50"
-            )}>
-                <input 
-                    type="radio" 
-                    name="payment_method" 
-                    value="cod" 
-                    checked={method === "cod"} 
-                    onChange={() => setMethod("cod")}
-                    className="w-5 h-5 text-[#8B6B4F] focus:ring-[#8B6B4F] accent-[#8B6B4F]"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                    <div className="p-2 bg-white rounded-md shadow-sm text-[#4E3B31]">
-                        <TruckIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-[#4E3B31]">Thanh toán khi nhận hàng (COD)</p>
-                        <p className="text-sm text-[#4E3B31]/60">Thanh toán tiền mặt khi shipper giao sách đến.</p>
-                    </div>
-                </div>
-            </label>
+        <div className="space-y-4">
+            {/* Option 1: COD */}
+            <label className={cn(
+                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all",
+                method === "cod" 
+                    ? "border-[#8B6B4F] bg-[#F5EDE3] ring-1 ring-[#8B6B4F]" 
+                    : "border-[#4E3B31]/20 bg-white hover:border-[#8B6B4F]/50"
+            )}>
+                <input 
+                    type="radio" 
+                    name="payment_method" 
+                    value="cod" 
+                    checked={method === "cod"} 
+                    onChange={() => setMethod("cod")}
+                    className="w-5 h-5 text-[#8B6B4F] focus:ring-[#8B6B4F] accent-[#8B6B4F]"
+                />
+                <div className="flex items-center gap-3 flex-1">
+                    <div className="p-2 bg-white rounded-md shadow-sm text-[#4E3B31]">
+                        <TruckIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-[#4E3B31]">Thanh toán khi nhận hàng (COD)</p>
+                        <p className="text-sm text-[#4E3B31]/60">Thanh toán tiền mặt khi shipper giao sách đến.</p>
+                    </div>
+                </div>
+            </label>
 
-            {/* Option 2: Bank Transfer */}
-            <label className={cn(
-                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all",
-                method === "bank" 
-                    ? "border-[#8B6B4F] bg-[#F5EDE3] ring-1 ring-[#8B6B4F]" 
-                    : "border-[#4E3B31]/20 bg-white hover:border-[#8B6B4F]/50"
-            )}>
-                <input 
-                    type="radio" 
-                    name="payment_method" 
-                    value="bank" 
-                    checked={method === "bank"} 
-                    onChange={() => setMethod("bank")}
-                    className="w-5 h-5 text-[#8B6B4F] focus:ring-[#8B6B4F] accent-[#8B6B4F]"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                    <div className="p-2 bg-white rounded-md shadow-sm text-[#4E3B31]">
-                        <QrCodeIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-[#4E3B31]">Chuyển khoản ngân hàng (QR)</p>
-                        <p className="text-sm text-[#4E3B31]/60">Quét mã QR hoặc chuyển khoản thủ công.</p>
-                    </div>
-                </div>
-            </label>
-            
-            {/* Bank Details Panel */}
-            {method === "bank" && (
-                <div className="ml-9 p-5 bg-white rounded-lg border border-[#4E3B31]/10 animate-in fade-in slide-in-from-top-2">
-                    <div className="flex flex-col md:flex-row gap-6">
-                         <div className="flex-shrink-0 flex flex-col items-center">
-                            <div className="w-32 h-32 bg-[#4E3B31] rounded-lg flex items-center justify-center text-white text-xs mb-2">
-                                [QR Code Placeholder]
-                            </div>
-                            <p className="text-xs text-[#4E3B31]/60">Quét để thanh toán nhanh</p>
-                         </div>
-                         <div className="flex-1 space-y-3 text-sm">
-                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
-                                <span className="text-[#4E3B31]/60">Ngân hàng</span>
-                                <span className="font-bold text-[#4E3B31]">Vietcombank</span>
-                            </div>
-                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
-                                <span className="text-[#4E3B31]/60">Số tài khoản</span>
-                                <span className="font-bold text-[#4E3B31] font-mono text-base">1234 5678 9012</span>
-                            </div>
-                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
-                                <span className="text-[#4E3B31]/60">Chủ tài khoản</span>
-                                <span className="font-bold text-[#4E3B31] uppercase">THE BOOK HAVEN</span>
-                            </div>
-                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
-                                <span className="text-[#4E3B31]/60">Số tiền</span>
-                                <span className="font-bold text-[#8B6B4F] text-base">${formatPrice(totalCost)}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-[#F5EDE3] p-2 rounded">
-                                <span className="text-[#4E3B31]/60 text-xs">Nội dung CK</span>
-                                <span className="font-bold text-[#4E3B31] font-mono">TBH_ORDER_{Math.floor(Math.random() * 1000)}</span>
-                            </div>
-                         </div>
-                    </div>
-                </div>
-            )}
+            {/* Option 2: Bank Transfer */}
+            <label className={cn(
+                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all",
+                method === "bank" 
+                    ? "border-[#8B6B4F] bg-[#F5EDE3] ring-1 ring-[#8B6B4F]" 
+                    : "border-[#4E3B31]/20 bg-white hover:border-[#8B6B4F]/50"
+            )}>
+                <input 
+                    type="radio" 
+                    name="payment_method" 
+                    value="bank" 
+                    checked={method === "bank"} 
+                    onChange={() => setMethod("bank")}
+                    className="w-5 h-5 text-[#8B6B4F] focus:ring-[#8B6B4F] accent-[#8B6B4F]"
+                />
+                <div className="flex items-center gap-3 flex-1">
+                    <div className="p-2 bg-white rounded-md shadow-sm text-[#4E3B31]">
+                        <QrCodeIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-[#4E3B31]">Chuyển khoản ngân hàng (QR)</p>
+                        <p className="text-sm text-[#4E3B31]/60">Quét mã QR hoặc chuyển khoản thủ công.</p>
+                    </div>
+                </div>
+            </label>
+            
+            {/* Bank Details Panel */}
+            {method === "bank" && (
+                <div className="ml-9 p-5 bg-white rounded-lg border border-[#4E3B31]/10 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex flex-col md:flex-row gap-6">
+                         <div className="flex-shrink-0 flex flex-col items-center">
+                            <div className="w-32 h-32 bg-[#4E3B31] rounded-lg flex items-center justify-center text-white text-xs mb-2">
+                                [QR Code Placeholder]
+                            </div>
+                            <p className="text-xs text-[#4E3B31]/60">Quét để thanh toán nhanh</p>
+                         </div>
+                         <div className="flex-1 space-y-3 text-sm">
+                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
+                                <span className="text-[#4E3B31]/60">Ngân hàng</span>
+                                <span className="font-bold text-[#4E3B31]">Vietcombank</span>
+                            </div>
+                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
+                                <span className="text-[#4E3B31]/60">Số tài khoản</span>
+                                <span className="font-bold text-[#4E3B31] font-mono text-base">1234 5678 9012</span>
+                            </div>
+                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
+                                <span className="text-[#4E3B31]/60">Chủ tài khoản</span>
+                                <span className="font-bold text-[#4E3B31] uppercase">THE BOOK HAVEN</span>
+                            </div>
+                            <div className="flex justify-between border-b border-dashed border-[#4E3B31]/20 pb-2">
+                                <span className="text-[#4E3B31]/60">Số tiền</span>
+                                <span className="font-bold text-[#8B6B4F] text-base">${formatPrice(totalCost)}</span>
+                            </div>
+                            <div className="flex justify-between items-center bg-[#F5EDE3] p-2 rounded">
+                                <span className="text-[#4E3B31]/60 text-xs">Nội dung CK</span>
+                                <span className="font-bold text-[#4E3B31] font-mono">TBH_ORDER_{Math.floor(Math.random() * 1000)}</span>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            )}
 
-            {/* Option 3: Credit Card */}
-            <label className={cn(
-                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all",
-                method === "card" 
-                    ? "border-[#8B6B4F] bg-[#F5EDE3] ring-1 ring-[#8B6B4F]" 
-                    : "border-[#4E3B31]/20 bg-white hover:border-[#8B6B4F]/50"
-            )}>
-                <input 
-                    type="radio" 
-                    name="payment_method" 
-                    value="card" 
-                    checked={method === "card"} 
-                    onChange={() => setMethod("card")}
-                    className="w-5 h-5 text-[#8B6B4F] focus:ring-[#8B6B4F] accent-[#8B6B4F]"
-                />
-                <div className="flex items-center gap-3 flex-1">
-                    <div className="p-2 bg-white rounded-md shadow-sm text-[#4E3B31]">
-                        <BanknotesIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-[#4E3B31]">Thẻ Tín dụng / Ghi nợ</p>
-                        <p className="text-sm text-[#4E3B31]/60">Visa, Mastercard, JCB...</p>
-                    </div>
-                </div>
-            </label>
+            {/* Option 3: Credit Card */}
+            <label className={cn(
+                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all",
+                method === "card" 
+                    ? "border-[#8B6B4F] bg-[#F5EDE3] ring-1 ring-[#8B6B4F]" 
+                    : "border-[#4E3B31]/20 bg-white hover:border-[#8B6B4F]/50"
+            )}>
+                <input 
+                    type="radio" 
+                    name="payment_method" 
+                    value="card" 
+                    checked={method === "card"} 
+                    onChange={() => setMethod("card")}
+                    className="w-5 h-5 text-[#8B6B4F] focus:ring-[#8B6B4F] accent-[#8B6B4F]"
+                />
+                <div className="flex items-center gap-3 flex-1">
+                    <div className="p-2 bg-white rounded-md shadow-sm text-[#4E3B31]">
+                        <BanknotesIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-[#4E3B31]">Thẻ Tín dụng / Ghi nợ</p>
+                        <p className="text-sm text-[#4E3B31]/60">Visa, Mastercard, JCB...</p>
+                    </div>
+                </div>
+            </label>
 
-            {/* Credit Card Form Panel - ĐÃ SỬA CĂN CHỈNH */}
-            {method === "card" && (
-                <div className="ml-9 p-5 bg-white rounded-lg border border-[#4E3B31]/10 space-y-4 animate-in fade-in slide-in-from-top-2">
-                    {/* Tên chủ thẻ - Đã sửa */}
-                    <div>
-                        <label className="text-xs font-bold uppercase text-[#4E3B31]/60 block mb-1">Tên chủ thẻ</label>
-                        <div className="relative">
-                            <Input placeholder="NGUYEN VAN A" className="bg-[#FBF8F3] border-[#4E3B31]/20 pl-9 uppercase" />
-                            <UserIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#4E3B31]/40" />
-                        </div>
-                    </div>
-                    {/* Số thẻ - Đã sửa */}
-                    <div>
-                        <label className="text-xs font-bold uppercase text-[#4E3B31]/60 block mb-1">Số thẻ</label>
-                        <div className="relative">
-                            <Input placeholder="0000 0000 0000 0000" className="bg-[#FBF8F3] border-[#4E3B31]/20 pl-9 font-mono" />
-                            <CreditCardIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#4E3B31]/40" />
-                        </div>
-                    </div>
-                    {/* Ngày hết hạn & CVV - Đã sửa */}
-                    <div className="grid grid-cols-2 gap-4">
-                        {/* Ngày hết hạn */}
-                        <div> 
-                            <label className="text-xs font-bold uppercase text-[#4E3B31]/60 block mb-1">Ngày hết hạn</label>
-                            <Input placeholder="MM/YY" className="bg-[#FBF8F3] border-[#4E3B31]/20 font-mono text-center" />
-                        </div>
-                        {/* CVV */}
-                        <div>
-                            <label className="text-xs font-bold uppercase text-[#4E3B31]/60 block mb-1">CVV</label>
-                            <div className="relative">
-                                <Input placeholder="123" type="password" maxLength={3} className="bg-[#FBF8F3] border-[#4E3B31]/20 font-mono text-center pr-8" />
-                                <Lock className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 text-[#4E3B31]/40" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    </div>
-  );
+            {/* Credit Card Form Panel */}
+            {method === "card" && (
+                <div className="ml-9 p-5 bg-white rounded-lg border border-[#4E3B31]/10 space-y-4 animate-in fade-in slide-in-from-top-2">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase text-[#4E3B31]/60">Tên chủ thẻ</label>
+                        <div className="relative">
+                            <Input placeholder="NGUYEN VAN A" className="bg-[#FBF8F3] border-[#4E3B31]/20 pl-9 uppercase" />
+                            <UserIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#4E3B31]/40" />
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase text-[#4E3B31]/60">Số thẻ</label>
+                        <div className="relative">
+                            <Input placeholder="0000 0000 0000 0000" className="bg-[#FBF8F3] border-[#4E3B31]/20 pl-9 font-mono" />
+                            <CreditCardIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#4E3B31]/40" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold uppercase text-[#4E3B31]/60">Ngày hết hạn</label>
+                            <Input placeholder="MM/YY" className="bg-[#FBF8F3] border-[#4E3B31]/20 font-mono text-center" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold uppercase text-[#4E3B31]/60">CVV</label>
+                            <div className="relative">
+                                <Input placeholder="123" type="password" maxLength={3} className="bg-[#FBF8F3] border-[#4E3B31]/20 font-mono text-center pr-8" />
+                                <Lock className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 text-[#4E3B31]/40" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    </div>
+  );
 }
 
 // --- MAIN PAGE CONTENT ---

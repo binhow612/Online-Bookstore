@@ -1,105 +1,120 @@
-import { getOrderByIdAndUserId } from "@/lib/data";
+import { getOrderById } from "@/lib/data";
 import { getSession } from "@/lib/session";
 import { formatPrice } from "@/lib/utils";
-import { BookOrderItemEntity } from "@/db/schema";
+import { format } from "date-fns";
 import { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
-type Params = { order_id: string };
-type Props = { params: Promise<Params> };
-
-function BookOrderItemCard({ orderItem }: { orderItem: BookOrderItemEntity }) {
-  const book = orderItem.book;
-  return (
-    <div className="flex items-start gap-4">
-      {book && (
-        <Image
-          src={book.cover_url}
-          width={64}
-          height={96}
-          alt={book.title}
-          className="object-cover w-16 h-24 rounded shadow"
-        />
-      )}
-      <div className="flex-1 flex flex-col">
-        <p className="text-lg font-semibold">{book?.title || orderItem.book_id}</p>
-        {book?.author && (
-          <p className="text-sm text-neutral-600">by {book.author}</p>
-        )}
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-neutral-500">Quantity:</span>
-          <span className="text-neutral-700 font-semibold">{orderItem.quantity}</span>
-        </div>
-      </div>
-      <div className="flex flex-col items-end">
-        <p className="text-lg text-neutral-800">${formatPrice(orderItem.subtotal)}</p>
-      </div>
-    </div>
-  );
-}
-
-const getOrderFromProps = async (props: Props) => {
+export default async function OrderDetailPage({
+  params,
+}: {
+  params: { order_id: string };
+}) {
   const session = await getSession();
-  if (!session.user) {
-    redirect("/login");
-  }
+  if (!session.user) redirect("/login");
 
-  const params = await props.params;
-  const order = await getOrderByIdAndUserId({
-    orderId: parseInt(params.order_id),
-    userId: session.user.id,
-  });
-
-  if (!order) {
-    notFound();
-  }
-
-  return order;
-};
-
-export default async function OrderPage(props: Props) {
-  const order = await getOrderFromProps(props);
-  const itemCount = order.bookOrderItems?.length ?? 0;
+  const order = await getOrderById(params.order_id);
+  if (!order) redirect("/orders");
 
   return (
-    <div className="container max-w-4xl mx-auto py-12">
-      <Link href="/orders" className="text-sm text-gray-700 hover:underline">
-        ← Back to Orders
-      </Link>
-      <h1 className="text-3xl font-medium mb-4 mt-2">Order #{order.id}</h1>
-      <div className="flex flex-col gap-1 mb-6">
-        <div className="flex items-center gap-4 p-2 bg-gray-50 rounded">
-          <div className="bg-teal-700 text-teal-50 px-2 py-0.5 rounded text-sm">
-            Delivery Address
-          </div>
-          <div>
-            {order.shipping_address}, {order.shipping_city},{" "}
-            {order.shipping_country_code}
-          </div>
+    <div className="container max-w-3xl mx-auto py-12">
+      {/* PAGE TITLE */}
+      <h1 className="text-3xl font-semibold text-[var(--wood-brown)] mb-8">
+        Order <span className="font-bold">#{order.id}</span>
+      </h1>
+
+      {/* ORDER SUMMARY CARD */}
+      <div
+        className="
+        bg-[var(--warm-white)]
+        border border-[rgba(78,59,49,0.12)]
+        rounded-2xl p-6 shadow-sm 
+        flex flex-col gap-3
+      "
+      >
+        <div className="flex flex-col">
+          <span className="text-sm text-gray-500">Placed on</span>
+          <span className="text-[var(--dark-coffee)] font-semibold">
+            {format(new Date(order.created_at), "MMMM d, yyyy h:mm a")}
+          </span>
+        </div>
+
+        <div className="flex flex-col">
+          <span className="text-sm text-gray-500">Total Amount</span>
+          <span className="text-[var(--dark-coffee)] font-semibold text-lg">
+            ${formatPrice(order.total_price)}
+          </span>
+        </div>
+
+        {/* Status (optional future use) */}
+        <div className="flex flex-col">
+          <span className="text-sm text-gray-500">Status</span>
+          <span className="inline-block px-3 py-1 rounded-md bg-[var(--beige-cream)] text-[var(--wood-brown)] font-medium shadow-sm text-sm border border-[rgba(78,59,49,0.1)]">
+            {order.status ?? "Completed"}
+          </span>
         </div>
       </div>
-      <div className="flex flex-col gap-4 mb-4">
-        {order.bookOrderItems?.map((orderItem) => (
-          <BookOrderItemCard key={orderItem.book_id} orderItem={orderItem} />
+
+      {/* SECTION TITLE */}
+      <h2 className="text-2xl font-semibold text-[var(--wood-brown)] mt-10 mb-4">
+        Order Items
+      </h2>
+
+      {/* LIST OF ORDER ITEMS */}
+      <div className="flex flex-col gap-4">
+        {order.bookOrderItems?.map((item) => (
+          <div
+            key={item.id}
+            className="
+              flex gap-4 
+              bg-white
+              rounded-2xl 
+              shadow-sm 
+              border border-[rgba(78,59,49,0.1)] 
+              p-4
+              hover:shadow-md
+              transition-shadow
+            "
+          >
+            {/* BOOK COVER */}
+            {item.book?.cover_url && (
+              <Image
+                src={item.book.cover_url}
+                alt={item.book.title}
+                width={90}
+                height={130}
+                className="rounded-md object-cover shadow-sm"
+              />
+            )}
+
+            {/* TITLE + PRICE */}
+            <div className="flex flex-col justify-center flex-1">
+              <p className="font-semibold text-lg text-[var(--wood-brown)] leading-tight">
+                {item.book?.title}
+              </p>
+
+              <p className="text-gray-700 text-sm mt-1">
+                Quantity:{" "}
+                <span className="font-medium">{item.quantity}</span>
+              </p>
+
+              <p className="text-gray-700 text-sm">
+                Unit Price: ${formatPrice(item.unit_price)}
+              </p>
+
+              <p className="text-gray-800 font-semibold text-sm mt-2">
+                Subtotal: ${formatPrice(item.unit_price * item.quantity)}
+              </p>
+            </div>
+          </div>
         ))}
       </div>
-      <div className="flex gap-4 justify-between items-center border-t py-4">
-        <div className="text-gray-900 text-xl">
-          {itemCount} item{itemCount !== 1 && "s"}
-        </div>
-        <div className="text-gray-700 text-2xl">${formatPrice(order.total_price)}</div>
-      </div>
     </div>
   );
 }
 
-export async function generateMetadata(props: Props): Promise<Metadata> {
-  const order = await getOrderFromProps(props);
-  
-  return {
-    title: `Order #${order.id} - The Book Haven`,
-    robots: "noindex",
-  };
-}
+export const metadata: Metadata = {
+  title: "Order Details - The Book Haven",
+  robots: "noindex",
+};

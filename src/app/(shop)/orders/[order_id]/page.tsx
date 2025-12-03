@@ -1,4 +1,4 @@
-import { getOrderById } from "@/lib/data";
+import { getOrderByIdAndUserId } from "@/lib/data"; // Updated import
 import { getSession } from "@/lib/session";
 import { formatPrice } from "@/lib/utils";
 import { format } from "date-fns";
@@ -14,7 +14,12 @@ export default async function OrderDetailPage({
   const session = await getSession();
   if (!session.user) redirect("/login");
 
-  const order = await getOrderById(params.order_id);
+  // Use getOrderByIdAndUserId to fetch the order safely
+  const order = await getOrderByIdAndUserId({
+    orderId: parseInt(params.order_id),
+    userId: session.user.id,
+  });
+
   if (!order) redirect("/orders");
 
   return (
@@ -47,7 +52,7 @@ export default async function OrderDetailPage({
           </span>
         </div>
 
-        {/* Status (optional future use) */}
+        {/* Status */}
         <div className="flex flex-col">
           <span className="text-sm text-gray-500">Status</span>
           <span className="inline-block px-3 py-1 rounded-md bg-[var(--beige-cream)] text-[var(--wood-brown)] font-medium shadow-sm text-sm border border-[rgba(78,59,49,0.1)]">
@@ -65,7 +70,8 @@ export default async function OrderDetailPage({
       <div className="flex flex-col gap-4">
         {order.bookOrderItems?.map((item) => (
           <div
-            key={item.id}
+            // FIX 1: Use book_id instead of id
+            key={item.book_id} 
             className="
               flex gap-4 
               bg-white
@@ -100,11 +106,13 @@ export default async function OrderDetailPage({
               </p>
 
               <p className="text-gray-700 text-sm">
-                Unit Price: ${formatPrice(item.unit_price)}
+                {/* FIX 2: Use item.price instead of item.unit_price */}
+                Unit Price: ${formatPrice(item.price)}
               </p>
 
               <p className="text-gray-800 font-semibold text-sm mt-2">
-                Subtotal: ${formatPrice(item.unit_price * item.quantity)}
+                {/* FIX 3: Use item.subtotal directly */}
+                Subtotal: ${formatPrice(item.subtotal)}
               </p>
             </div>
           </div>

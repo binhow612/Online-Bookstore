@@ -8,6 +8,8 @@ import { outdent } from "outdent";
 import { openai } from "./ai";
 import { embedder } from "./embedder";
 import { vectorStore } from "./vector-store";
+// Trong src/lib/agent.ts
+import { getOrdersByUserId } from "@/lib/data"; // Thêm dòng này
 
 // [!code change] Cập nhật Prompt để định dạng list rõ ràng và bắt buộc có ảnh
 const systemPrompt = outdent`
@@ -44,6 +46,7 @@ const systemPrompt = outdent`
   - list_products: List available books (10 at a time).
   - list_collections: List available categories.
   - get_user_cart: Check user's shopping cart.
+  - get_user_orders: Check user's order history.
 
   When receiving a query, try searching first. DO NOT ask for more information unless absolutely necessary.
   Briefly explain your recommendations.
@@ -292,6 +295,46 @@ export class Agent {
             };
           }
           return this.session.cart;
+        },
+      },
+      {
+        name: "get_user_orders",
+        description: "Get the list of orders placed by the current user.",
+        parameters: {
+          type: "object",
+          properties: {},
+        },
+        execute: async () => {
+          // Kiểm tra session người dùng
+          if (!this.session || !this.session.user) {
+            return {
+              error: "User is not logged in. Please log in to view orders.",
+            };
+          }
+
+          // Gọi hàm lấy đơn hàng (sử dụng user id từ session)
+          try {
+            const orders = await getOrdersByUserId(this.session.user.id);
+            
+            if (!orders || orders.length === 0) {
+              return { message: "You have no orders yet." };
+            }
+
+            // Trả về dữ liệu đơn hàng để AI xử lý
+            return orders.map(order => ({
+              id: order.id,
+              status: order.status,
+              total_price: order.total_price,
+              created_at: order.created_at,
+              items: order.bookOrderItems.map(item => ({
+                  title: item.book.title,
+                  quantity: item.quantity
+              }))
+            }));
+          } catch (error) {
+            console.error("Error fetching orders:", error);
+            return { error: "Failed to fetch orders." };
+          }
         },
       },
     ];
